@@ -1,0 +1,116 @@
+<html>
+	<script src="justified-layout.js"></script>
+	<h1>hey</h1>
+	<div class="container" style="opacity:0">
+		<img class="image" src="./images/151109151843-waf-interlace-sharp-1-exlarge-169.jpg"/>
+		<img class="image" src="./images/1605-Architecture-Creativity-wHY-Louisville-Speed-Art-Museum-01.jpg"/>
+		<img class="image" src="./images/great-building-watercolor.jpg"/>
+		<img class="image" src="./images/monograph-architecture-website-template-mezzanine-profile-01-a.jpg"/>
+		<img class="image" src="./images/empty-opponent.png"/>
+	</div>
+
+	<style>
+	.image {
+		position: absolute;
+	}
+	.container {
+		position: relative;
+	}
+	</style>
+
+	<script>
+		var sources = ["./images/151109151843-waf-interlace-sharp-1-exlarge-169.jpg", "./images/1605-Architecture-Creativity-wHY-Louisville-Speed-Art-Museum-01.jpg", "./images/great-building-watercolor.jpg", "./images/monograph-architecture-website-template-mezzanine-profile-01-a.jpg", "./images/empty-opponent.png"];
+
+		var ratios = sources.map(function(e) {return undefined});
+		var layoutGeometry;
+
+		var getRatios = function(sources) {
+			for (let i = 0; i < sources.length; i++) {
+				let img = new Image();
+				img.onload = function() { 
+					ratios[i] = this.width / this.height; 
+					loadRatios();
+				};
+				img.src = sources[i];
+			}
+		}
+
+		var loadRatios = function() {
+			if (ratios.every(isTypeNumber)) {
+				layoutGeometry = require('justified-layout')(ratios);
+				renderBoxes();
+			}
+		}
+
+		var isTypeNumber = function(ratio) {
+			return typeof ratio === "number";
+		}
+
+		var renderBoxes = function() {
+			var images = document.getElementsByClassName('image');
+			for (var i = 0; i < images.length; i++) {
+				images[i].style.width = layoutGeometry.boxes[i].width;
+				images[i].style.height = layoutGeometry.boxes[i].height;
+				images[i].style.top = layoutGeometry.boxes[i].top;
+				images[i].style.left = layoutGeometry.boxes[i].left;
+			}
+			document.getElementsByClassName('container')[0].style.opacity = 1;
+		}
+		
+		getRatios(sources);
+
+		// console.log(layoutGeometry);
+
+		// var getImages = function(sources) {
+		// 	return new Promise(function(resolve, reject) {
+		// 		var images = sources.map(function(source) { 
+		// 			let img = new Image();
+		// 			img.onload = function() { console.log(this.height);}
+		// 			img.src = source;
+		// 			return img;
+		// 		});
+		// 		resolve(images);
+		// 	})
+		// }
+
+		// var getRatios = function(images) {
+		// 	var ratios = images.map(function(image) {
+		// 		return image.width / image.height;
+		// 	});
+		// 	return ratios; 
+		// }
+
+		// var ratios = getImages(sources).then(images => {
+		// 	return getRatios(images);
+		// });
+
+
+		// var getImages = function(sources, callback) {
+		// 	var images = sources.map(function(source) { 
+		// 		let img = new Image();
+		// 		img.src = source;
+		// 		console.log(img.complete)
+		// 		return img;
+		// 	});
+		// 	console.log(images.every(isLoaded));
+		// 	console.log(images);
+		// 	return callback(images);
+		// }
+
+
+
+		// var isLoaded = function(image) {
+		// 	return image.complete;
+		// }
+
+
+		// var realRatios = getImages(sources, getRatios)
+
+
+	</script>
+	
+</html>
+
+<!-- 
+I've gotten it so it renders nicely. Now what are the ideas? I guess I can do sorting. I think that I would prefer to have cleaned up the 
+ -->
