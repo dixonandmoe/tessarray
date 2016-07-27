@@ -2,29 +2,23 @@ document.write('<script src="justified-layout.min.js" type="text/javascript"></s
 
 // Grid needs styling. Opacity and positioning
 
-var JustifiedGrid = function(grid, itemClass, selectorClass) {
-	this.grid = grid;
-	this.itemObjects = [];
-	this.itemNodes = [];
-	this.selectors = [];
-
-	this.instantiate(grid, itemClass, selectorClass);	
-}
-
-JustifiedGrid.prototype.instantiate = function(grid, itemClass, selectorClass) {
-	var items = document.getElementsByClassName(itemClass);
-	for (var i = 0; i < items.length; i++) {
-		this.itemNodes[i] = items[i];
-		this.itemObjects[i] = new GridItem(items[i], i);
-
-		this.itemNodes[i].style.position = "absolute";
-	}
+var JustifiedGrid = function(gridClass, itemClass, selectorClass) {
+	this.grid = document.getElementsByClassName(gridClass)[0];
 
 	this.selectors = document.getElementsByClassName(selectorClass);
-
 	for (var i = 0; i < this.selectors.length; i++) {
 		var category = this.selectors[i].getAttribute('data-category');
 		this.selectors[i].addEventListener("click", this.sortByCategory.bind(this, category));
+	}
+
+	this.itemObjects = [];
+	this.itemNodes = [];
+
+	var items = document.getElementsByClassName(itemClass);
+	for (var i = 0; i < items.length; i++) {
+		this.itemNodes[i] = items[i];
+		this.itemNodes[i].style.position = "absolute";
+		this.itemObjects[i] = new GridItem(items[i], i);
 	}
 }
 
@@ -35,7 +29,7 @@ var GridItem = function(item, index) {
 	this.classes = {};
 	var classes = item.getAttribute('class').split(" ");
 	for (var i = 0; i < classes.length; i++) {
-		this.classes[classes[i]] = item.getAttribute("data" + classes[i]) || null;
+		this.classes[classes[i]] = item.getAttribute("data-" + classes[i]) || null;
 	}
 
 	// Grab given aspect ratio
@@ -78,7 +72,9 @@ JustifiedGrid.prototype.sortByCategory = function(category) {
 		this.itemNodes[i].style.display = "none";
 	}
 
+	console.log(ratios);
 	console.log(layoutGeometry);
+	this.grid.style.height = layoutGeometry.containerHeight;
 
 	for (var i = 0; i < layoutGeometry.boxes.length; i++) {
 		var itemNode = this.itemNodes[indexes[i]];

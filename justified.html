@@ -2,10 +2,11 @@
 	<script src="justified-sort.js"></script>
 	<h1>hey</h1>
 	<!-- style="opacity:0" -->
+	<button class="selector" data-category="all">All</button>
 	<button class="selector" data-category="photograph">Photograph</button>
 	<button class="selector" data-category="not-photograph">not-photograph</button>
 	<div class="container">
-		<picture class="image-container photograph" data-aspect-ratio="1.7808219178082192">	  
+		<picture class="image-container photograph all" data-all="5" data-aspect-ratio="1.7808219178082192">	  
 			<div class="container-2">
 			</div>
 			<div class="container-3">  
@@ -14,16 +15,16 @@
 				</div>
 			</div>
 		</picture>
-		<picture class="image-container photograph" data-aspect-ratio="1.6363636363636365">		    
+		<picture class="image-container photograph all" data-all="4" data-aspect-ratio="1.6363636363636365">		    
 			<img class="image" src="./images/1605-Architecture-Creativity-wHY-Louisville-Speed-Art-Museum-01.jpg"/>
 		</picture>
-		<picture class="image-container not-photograph" data-aspect-ratio="0.7049608355091384">		    
+		<picture class="image-container not-photograph all" data-all="2" data-aspect-ratio="0.7049608355091384">		    
 			<img class="image" src="./images/great-building-watercolor.jpg"/>
 		</picture>
-		<picture class="image-container photograph" data-aspect-ratio="0.7049608355091384">		    
+		<picture class="image-container photograph all" data-all="3" data-aspect-ratio="0.7049608355091384">		    
 			<img class="image" src="./images/monograph-architecture-website-template-mezzanine-profile-01-a.jpg"/>
 		</picture>
-		<picture class="image-container not-photograph" data-aspect-ratio="0.8803827751196173">		    
+		<picture class="image-container not-photograph all" data-all="1" data-aspect-ratio="0.8803827751196173">
 			<img class="image" src="./images/empty-opponent.png"/>
 		</picture>
 	</div>
@@ -42,30 +43,8 @@
 	<script>
 
 	var jg = new JustifiedGrid("container", "image-container", "selector")
-	jg.sortByCategory("photograph");
+	jg.sortByCategory("all");
 
-	// var justify = function(grid, itemClass, selector) {
-
-	// }
-
-	// class JustifiedGrid {
-	// 	constructor(grid, itemClass, selector) {
-	// 		this.grid = grid;
-
-	// 	}
-	// }
-
-	// class GridItem {
-	// 	constructor()
-	// }
-
-
-
-
-
-
-
-		// var sources = ["./images/151109151843-waf-interlace-sharp-1-exlarge-169.jpg", "./images/1605-Architecture-Creativity-wHY-Louisville-Speed-Art-Museum-01.jpg", "./images/great-building-watercolor.jpg", "./images/monograph-architecture-website-template-mezzanine-profile-01-a.jpg", "./images/empty-opponent.png"];
 
 		// var ratios = sources.map(function(e) {return undefined});
 		// var layoutGeometry;
