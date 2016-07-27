@@ -5,26 +5,34 @@
 	<button class="selector" data-category="photograph">Photograph</button>
 	<button class="selector" data-category="not-photograph">not-photograph</button>
 	<div class="container">
-		<picture class="image photograph" data-width="number" data-height="number">	    
-			<img src="./images/151109151843-waf-interlace-sharp-1-exlarge-169.jpg"/>
+		<picture class="image-container photograph" data-aspect-ratio="1.7808219178082192">	  
+			<div class="container-2">
+			</div>
+			<div class="container-3">  
+				<div class="container-4">
+					<img class="image" src="./images/151109151843-waf-interlace-sharp-1-exlarge-169.jpg"/>
+				</div>
+			</div>
 		</picture>
-		<picture class="image photograph" data-width="number" data-height="number">		    
-			<img src="./images/1605-Architecture-Creativity-wHY-Louisville-Speed-Art-Museum-01.jpg"/>
+		<picture class="image-container photograph" data-aspect-ratio="1.6363636363636365">		    
+			<img class="image" src="./images/1605-Architecture-Creativity-wHY-Louisville-Speed-Art-Museum-01.jpg"/>
 		</picture>
-		<picture class="image not-photograph" data-width="number" data-height="number">		    
-			<img src="./images/great-building-watercolor.jpg"/>
+		<picture class="image-container not-photograph" data-aspect-ratio="0.7049608355091384">		    
+			<img class="image" src="./images/great-building-watercolor.jpg"/>
 		</picture>
-		<picture class="image photograph" data-width="number" data-height="number">		    
-			<img src="./images/monograph-architecture-website-template-mezzanine-profile-01-a.jpg"/>
+		<picture class="image-container photograph" data-aspect-ratio="0.7049608355091384">		    
+			<img class="image" src="./images/monograph-architecture-website-template-mezzanine-profile-01-a.jpg"/>
 		</picture>
-		<picture class="image not-photograph" data-width="number" data-height="number">		    
-			<img src="./images/empty-opponent.png"/>
+		<picture class="image-container not-photograph" data-aspect-ratio="0.8803827751196173">		    
+			<img class="image" src="./images/empty-opponent.png"/>
 		</picture>
 	</div>
 
 	<style>
 	.image {
-		position: absolute;
+		height: 100%;
+		width: 100%;
+		position: relative;
 	}
 	.container {
 		position: relative;
@@ -33,8 +41,8 @@
 
 	<script>
 
-	var jg = new JustifiedGrid("container", "image", "selector")
-		// Pass in the 
+	var jg = new JustifiedGrid("container", "image-container", "selector")
+	jg.sortByCategory("photograph");
 
 	// var justify = function(grid, itemClass, selector) {
 
@@ -63,7 +71,7 @@
 		// var layoutGeometry;
 
 		// var getRatios = function(sources) {
-		// 	for (let i = 0; i < sources.length; i++) {
+		//  for (let i = 0; i < sources.length; i++) {
 		// 		let img = new Image();
 		// 		img.onload = function() { 
 		// 			ratios[i] = this.width / this.height; 
