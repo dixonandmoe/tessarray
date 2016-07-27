@@ -1,4 +1,4 @@
-document.write('<script src="justified-layout.min.js" type="text/javascript"></script>');
+document.write('<script src="justified-layout.js" type="text/javascript"></script>');
 
 // Grid needs styling. Opacity and positioning
 
@@ -48,7 +48,6 @@ var GridItem = function(item, index) {
 }
 
 JustifiedGrid.prototype.sortByCategory = function(category) {
-	console.log("sortByCategory running");
 	var filteredItems = this.itemObjects.filter(function(item) {
 		return item.classes[category] !== undefined;
 	});
@@ -63,9 +62,11 @@ JustifiedGrid.prototype.sortByCategory = function(category) {
 
 	var ratios = sortedItems.map(function(item) {
 		return item.aspectRatio;
-	})
+	});
 
-	var layoutGeometry = require('justified-layout')(ratios);
+	console.log(ratios);
+
+	var layoutGeometry = require('justified-layout')(ratios, {containerWidth: 1060});
 
 	// Display none to begin
 	for (var i = 0; i < this.itemNodes.length; i++) {
@@ -85,7 +86,4 @@ JustifiedGrid.prototype.sortByCategory = function(category) {
 		itemNode.style.top = box.top;
 		itemNode.style.width = box.width;
 	}
-
-
-
 }
