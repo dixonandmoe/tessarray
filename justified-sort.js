@@ -2,8 +2,8 @@ document.write('<script src="justified-layout.js" type="text/javascript"></scrip
 
 // Grid needs styling. Opacity and positioning
 
-var JustifiedGrid = function(gridClass, itemClass, selectorClass) {
-	this.grid = document.getElementsByClassName(gridClass)[0];
+var JustifiedGrid = function(containerClass, itemClass, selectorClass) {
+	this.container = document.getElementsByClassName(containerClass)[0];
 
 	this.selectors = document.getElementsByClassName(selectorClass);
 	for (var i = 0; i < this.selectors.length; i++) {
@@ -61,12 +61,10 @@ JustifiedGrid.prototype.sortByCategory = function(category) {
 	});
 
 	var ratios = sortedItems.map(function(item) {
-		return item.aspectRatio;
+		return parseFloat(item.aspectRatio);
 	});
 
-	console.log(ratios);
-
-	var layoutGeometry = require('justified-layout')(ratios, {containerWidth: 1060});
+	var layoutGeometry = require('justified-layout')(ratios);
 
 	// Display none to begin
 	for (var i = 0; i < this.itemNodes.length; i++) {
