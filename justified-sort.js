@@ -4,6 +4,7 @@ document.write('<script src="justified-layout.js" type="text/javascript"></scrip
 
 var JustifiedGrid = function(containerClass, itemClass, selectorClass) {
 	this.container = document.getElementsByClassName(containerClass)[0];
+	this.containerWidth = this.container.clientWidth;
 
 	this.selectors = document.getElementsByClassName(selectorClass);
 	for (var i = 0; i < this.selectors.length; i++) {
@@ -20,6 +21,25 @@ var JustifiedGrid = function(containerClass, itemClass, selectorClass) {
 		this.itemNodes[i].style.position = "absolute";
 		this.itemObjects[i] = new GridItem(items[i], i);
 	}
+
+	this.setSelectedItems([]);
+	window.addEventListener("resize", this.renderIfNecessary.bind(this))
+}
+
+var test = function() {
+	console.log("testinnnnnng");
+}
+
+JustifiedGrid.prototype.setSelectedItems = function(sortedItems) {
+	this.selectedItems = sortedItems;
+
+	this.indexes = this.selectedItems.map(function(item) {
+		return item.index;
+	});
+
+	this.ratios = sortedItems.map(function(item) {
+		return parseFloat(item.aspectRatio);
+	});
 }
 
 var GridItem = function(item, index) {
@@ -56,27 +76,30 @@ JustifiedGrid.prototype.sortByCategory = function(category) {
 		return item.classes[category];
 	});
 
-	var indexes = sortedItems.map(function(item) {
-		return item.index;
-	});
+	this.setSelectedItems(sortedItems);
+	this.renderItems();
+}
 
-	var ratios = sortedItems.map(function(item) {
-		return parseFloat(item.aspectRatio);
-	});
+JustifiedGrid.prototype.renderIfNecessary = function() {
+	if (this.containerWidth !== this.container.clientWidth) {
+		this.renderItems();
+	}
+}
 
-	var layoutGeometry = require('justified-layout')(ratios);
+JustifiedGrid.prototype.renderItems = function() {
+	this.containerWidth = this.container.clientWidth;
+
+	var layoutGeometry = require('justified-layout')(this.ratios, {containerWidth: this.containerWidth});
 
 	// Display none to begin
 	for (var i = 0; i < this.itemNodes.length; i++) {
 		this.itemNodes[i].style.display = "none";
 	}
 
-	console.log(ratios);
-	console.log(layoutGeometry);
-	this.grid.style.height = layoutGeometry.containerHeight;
+	this.container.style.height = layoutGeometry.containerHeight;
 
 	for (var i = 0; i < layoutGeometry.boxes.length; i++) {
-		var itemNode = this.itemNodes[indexes[i]];
+		var itemNode = this.itemNodes[this.indexes[i]];
 		var box = layoutGeometry.boxes[i];
 		itemNode.style.display = "";
 		itemNode.style.height = box.height;
