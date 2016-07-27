@@ -24,10 +24,11 @@ var JustifiedGrid = function(containerClass, itemClass, selectorClass) {
 
 	this.setSelectedItems([]);
 	window.addEventListener("resize", this.renderIfNecessary.bind(this))
-}
 
-var test = function() {
-	console.log("testinnnnnng");
+	this.container.addEventListener('webkitAnimationEnd', function(){
+		console.log(this);
+  	this.classList.remove("animate-bottom");
+	}, false);
 }
 
 JustifiedGrid.prototype.setSelectedItems = function(sortedItems) {
@@ -68,6 +69,8 @@ var GridItem = function(item, index) {
 }
 
 JustifiedGrid.prototype.sortByCategory = function(category) {
+	// this.container.style.display = "none";
+	this.container.classList.add("animate-bottom");
 	var filteredItems = this.itemObjects.filter(function(item) {
 		return item.classes[category] !== undefined;
 	});
@@ -88,6 +91,9 @@ JustifiedGrid.prototype.renderIfNecessary = function() {
 
 JustifiedGrid.prototype.renderItems = function() {
 	this.containerWidth = this.container.clientWidth;
+	// console.log("running display=none")
+	// this.container.style.display = "none";
+	// console.log(this.container.style.display);
 
 	var layoutGeometry = require('justified-layout')(this.ratios, {containerWidth: this.containerWidth});
 
@@ -107,4 +113,7 @@ JustifiedGrid.prototype.renderItems = function() {
 		itemNode.style.top = box.top;
 		itemNode.style.width = box.width;
 	}
+	// this.container.style.display = "block";
+	// console.log(this.container.style.display);
+	// this.container.classList.remove("animate-bottom");
 }

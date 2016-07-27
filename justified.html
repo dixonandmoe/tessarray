@@ -5,7 +5,7 @@
 	<button class="selector" data-category="all">All</button>
 	<button class="selector" data-category="photograph">Photograph</button>
 	<button class="selector" data-category="not-photograph">not-photograph</button>
-	<div class="container">
+	<div class="container animate-bottom">
 		<picture class="image-container photograph all" data-all="5" data-aspect-ratio="1.7808219178082192">	  
 			<div class="container-2">
 			</div>
@@ -38,6 +38,23 @@
 	.container {
 		position: relative;
 		width: 100%;
+	}
+
+	.animate-bottom {
+	  -webkit-animation-name: animatebottom;
+	  -webkit-animation-duration: 0.5s;
+	  animation-name: animatebottom;
+	  animation-duration: 0.5s
+	}
+
+	@-webkit-keyframes animatebottom {
+	  from { bottom:-100px; opacity:0 }
+	  to { bottom:0px; opacity:1 }
+	}
+
+	@keyframes animatebottom {
+	  from{ bottom:-100px; opacity:0 }
+	  to{ bottom:0; opacity:1 }
 	}
 	</style>
 
