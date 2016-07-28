@@ -97,6 +97,8 @@ Tessarray.prototype.setOptionValue = function(key, defaultValue) {
 Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
 	this.selectedBoxes = sortedBoxes;
 
+	this.oldIndexes = this.indexes;
+
 	this.indexes = this.selectedBoxes.map(function(box) {
 		return box.index;
 	});
@@ -171,22 +173,21 @@ Tessarray.prototype.renderBoxes = function(callback) {
 
 	// var layoutGeometry = require('justified-layout')(this.ratios, this.options.flickrObject || this.containerWidth || 1060);
 	var layoutGeometry = require('justified-layout')(this.ratios, {containerWidth: this.containerWidth});
-	console.log(layoutGeometry);
 
-	// Display none to begin
 	for (var i = 0; i < this.boxNodes.length; i++) {
-		this.boxNodes[i].style.display = "none";
-	}
+		var boxNode = this.boxNodes[i];
+		if (this.indexes.includes(i)) {
+			var box = layoutGeometry.boxes[this.indexes.indexOf(i)];
+			boxNode.style.transform = "scale(1)";
+			boxNode.style.height = box.height;
+			boxNode.style.left = box.left;
+			boxNode.style.top = box.top;
+			boxNode.style.width = box.width;
+		} else if (this.oldIndexes.includes(i)) {
+			boxNode.style.transform = "scale(0)";
+		} 
+	}	
 
-	for (var i = 0; i < layoutGeometry.boxes.length; i++) {
-		var boxNode = this.boxNodes[this.indexes[i]];
-		var box = layoutGeometry.boxes[i];
-		boxNode.style.display = "";
-		boxNode.style.height = box.height;
-		boxNode.style.left = box.left;
-		boxNode.style.top = box.top;
-		boxNode.style.width = box.width;
-	}		
 	console.log(callback);
 	if (callback) {
 		callback(this.container);
