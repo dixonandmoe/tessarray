@@ -62,7 +62,7 @@ var Tessarray = function(boxClass, options) {
 			this.selectors[i].addEventListener("click", this.sortByCategory.bind(this, category));
 		}
 	}
-	
+
 	if (this.options.transitionInClass) {
 		this.transitionIn = function(container) {
 			container.classList.add(this.options.transitionInClass);
@@ -136,7 +136,9 @@ var TessarrayBox = function(box, index) {
 }
 
 Tessarray.prototype.sortByCategory = function(category) {
-	this.transitionOut(this.container);
+	if (this.options.transitionInClass) {
+		this.transitionOut(this.container);
+	}
 
 	setTimeout(function(){
 		if (this.options.mountAnimationClass) {
