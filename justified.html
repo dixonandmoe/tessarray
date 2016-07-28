@@ -1,7 +1,6 @@
 <html>
 	<script src="justified-sort.js"></script>
 	<h1>hey</h1>
-	<!-- style="opacity:0" -->
 	<button class="selector" data-category="all">All</button>
 	<button class="selector" data-category="photograph">Photograph</button>
 	<button class="selector" data-category="not-photograph">not-photograph</button>
@@ -37,7 +36,6 @@
 	}
 	.container {
 		position: relative;
-		width: 100%;
 	}
 
 	.animate-bottom {
@@ -60,9 +58,13 @@
 
 	<script>
 
-	var jg = new JustifiedGrid("container", "image-container", "selector")
-	jg.sortByCategory("all");
-
+	var jg = new JustifiedGrid("image-container", {
+		containerClass: "container",
+		selectorClass: "selector",
+		resize: false,
+		defaultCategory: "photograph",
+		mountAnimationClass: "animate-bottom"
+	});
 
 		// var ratios = sources.map(function(e) {return undefined});
 		// var layoutGeometry;

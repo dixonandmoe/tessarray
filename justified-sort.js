@@ -2,118 +2,153 @@ document.write('<script src="justified-layout.js" type="text/javascript"></scrip
 
 // Grid needs styling. Opacity and positioning
 
-var JustifiedGrid = function(containerClass, itemClass, selectorClass) {
-	this.container = document.getElementsByClassName(containerClass)[0];
-	this.containerWidth = this.container.clientWidth;
+var JustifiedGrid = function(boxClass, options) {
+	// Set default values for options
+	this.options = options || {};
+	this.setOptionValue("containerClass", false);
+	this.setOptionValue("selectorClass", false);
+	this.setOptionValue("defaultCategory", false);
+	this.setOptionValue("resize", true);
+	this.setOptionValue("mountAnimationClass", false);
+	this.setOptionValue("unmountAnimationClass", false);
 
-	this.selectors = document.getElementsByClassName(selectorClass);
-	for (var i = 0; i < this.selectors.length; i++) {
-		var category = this.selectors[i].getAttribute('data-category');
-		this.selectors[i].addEventListener("click", this.sortByCategory.bind(this, category));
+	// For each box, create an object that contains the data, and a reference to the node
+	this.boxObjects = [];
+	this.boxNodes = [];
+	var boxes = document.getElementsByClassName(boxClass);
+	for (var i = 0; i < boxes.length; i++) {
+		this.boxNodes[i] = boxes[i];
+		this.boxNodes[i].style.position = "absolute";
+		this.boxObjects[i] = new GridBox(boxes[i], i);
 	}
 
-	this.itemObjects = [];
-	this.itemNodes = [];
+	// Run if container class is given
+	if (this.options.containerClass) {
+		if (this.options.resize || this.options.mountAnimationClass) {
+			this.container = document.getElementsByClassName(this.options.containerClass)[0];
+			this.containerWidth = this.container.clientWidth;
+			// this.container.style.position = "relative";
+		}
 
-	var items = document.getElementsByClassName(itemClass);
-	for (var i = 0; i < items.length; i++) {
-		this.itemNodes[i] = items[i];
-		this.itemNodes[i].style.position = "absolute";
-		this.itemObjects[i] = new GridItem(items[i], i);
+		// Resize container upon window size change if container size is modified
+		if (this.options.resize) {
+			this.setSelectedBoxes([]);
+			window.addEventListener("resize", this.renderIfNecessary.bind(this))
+		}
+
+		if (this.options.mountAnimationClass) {
+			this.container.addEventListener('webkitAnimationEnd', function(){
+				console.log(this);
+		  	this.classList.remove(this.options.mountAnimationClass);
+			}, false);
+		}
 	}
 
-	this.setSelectedItems([]);
-	window.addEventListener("resize", this.renderIfNecessary.bind(this))
+	if (this.options.selectorClass) {
+		this.selectors = document.getElementsByClassName(this.options.selectorClass);
+		for (var i = 0; i < this.selectors.length; i++) {
+			var category = this.selectors[i].getAttribute('data-category');
+			this.selectors[i].addEventListener("click", this.sortByCategory.bind(this, category));
+		}
 
-	this.container.addEventListener('webkitAnimationEnd', function(){
-		console.log(this);
-  	this.classList.remove("animate-bottom");
-	}, false);
+		// Render default category, else render all boxes
+		if (this.options.defaultCategory) {
+			this.sortByCategory(this.options.defaultCategory);
+		} else {
+			this.setSelectedBoxes(this.boxObjects);
+			this.renderBoxes();
+		}
+	}
 }
 
-JustifiedGrid.prototype.setSelectedItems = function(sortedItems) {
-	this.selectedItems = sortedItems;
+JustifiedGrid.prototype.setOptionValue = function(key, defaultValue) {
+	if (this.options[key] === undefined) {
+		this.options[key] = defaultValue;
+	}
+}
 
-	this.indexes = this.selectedItems.map(function(item) {
-		return item.index;
+JustifiedGrid.prototype.setSelectedBoxes = function(sortedBoxes) {
+	this.selectedBoxes = sortedBoxes;
+
+	this.indexes = this.selectedBoxes.map(function(box) {
+		return box.index;
 	});
 
-	this.ratios = sortedItems.map(function(item) {
-		return parseFloat(item.aspectRatio);
+	this.ratios = sortedBoxes.map(function(box) {
+		return parseFloat(box.aspectRatio);
 	});
 }
 
-var GridItem = function(item, index) {
+var GridBox = function(box, index) {
 	this.index = index;
 
-	// Create GridItem with an attribute of each class that returns the position value or null
+	// Create GridBox with an attribute of each class that returns the position value or null
 	this.classes = {};
-	var classes = item.getAttribute('class').split(" ");
+	var classes = box.getAttribute('class').split(" ");
 	for (var i = 0; i < classes.length; i++) {
-		this.classes[classes[i]] = item.getAttribute("data-" + classes[i]) || null;
+		this.classes[classes[i]] = box.getAttribute("data-" + classes[i]) || null;
 	}
 
 	// Grab given aspect ratio
-	this.aspectRatio = item.getAttribute('data-aspect-ratio');
-
-	// Get aspect ratio by find the image, loading it with JavaScript, and getting widtha and height
+	if (box.getAttribute('data-aspect-ratio')) {
+		this.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
+	} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
+		this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
+	}
+	// Else, get aspect ratio by find the image, loading it with JavaScript, and getting widtha and height
 	// There is an issue with how slowly this loads. When sort is called immediately, ratios 
 	// have not yet been rendered.
-	// var source = item.querySelector('img').getAttribute('src');
+	// var source = box.querySelector('img').getAttribute('src');
 	// var img = new Image();
-	// var thisGridItem = this;	
+	// var thisGridBox = this;	
 	// img.onload = function() {
-	// 	thisGridItem.aspectRatio = this.width / this.height;
+	// 	thisGridBox.aspectRatio = this.width / this.height;
 	// }
 	// img.src = source;
 }
 
 JustifiedGrid.prototype.sortByCategory = function(category) {
-	// this.container.style.display = "none";
-	this.container.classList.add("animate-bottom");
-	var filteredItems = this.itemObjects.filter(function(item) {
-		return item.classes[category] !== undefined;
+	if (this.options.mountAnimationClass) {
+		this.container.classList.add(this.options.mountAnimationClass);
+	}
+
+	var filteredBoxes = this.boxObjects.filter(function(box) {
+		return box.classes[category] !== undefined;
 	});
 
-	var sortedItems = filteredItems.sort(function(item) {
-		return item.classes[category];
+	var sortedBoxes = filteredBoxes.sort(function(box) {
+		return box.classes[category];
 	});
 
-	this.setSelectedItems(sortedItems);
-	this.renderItems();
+	this.setSelectedBoxes(sortedBoxes);
+	this.renderBoxes();
 }
 
 JustifiedGrid.prototype.renderIfNecessary = function() {
 	if (this.containerWidth !== this.container.clientWidth) {
-		this.renderItems();
+		this.renderBoxes();
 	}
 }
 
-JustifiedGrid.prototype.renderItems = function() {
+JustifiedGrid.prototype.renderBoxes = function() {
 	this.containerWidth = this.container.clientWidth;
-	// console.log("running display=none")
-	// this.container.style.display = "none";
-	// console.log(this.container.style.display);
 
 	var layoutGeometry = require('justified-layout')(this.ratios, {containerWidth: this.containerWidth});
 
 	// Display none to begin
-	for (var i = 0; i < this.itemNodes.length; i++) {
-		this.itemNodes[i].style.display = "none";
+	for (var i = 0; i < this.boxNodes.length; i++) {
+		this.boxNodes[i].style.display = "none";
 	}
 
-	this.container.style.height = layoutGeometry.containerHeight;
+	// this.container.style.height = layoutGeometry.containerHeight;
 
 	for (var i = 0; i < layoutGeometry.boxes.length; i++) {
-		var itemNode = this.itemNodes[this.indexes[i]];
+		var boxNode = this.boxNodes[this.indexes[i]];
 		var box = layoutGeometry.boxes[i];
-		itemNode.style.display = "";
-		itemNode.style.height = box.height;
-		itemNode.style.left = box.left;
-		itemNode.style.top = box.top;
-		itemNode.style.width = box.width;
+		boxNode.style.display = "";
+		boxNode.style.height = box.height;
+		boxNode.style.left = box.left;
+		boxNode.style.top = box.top;
+		boxNode.style.width = box.width;
 	}
-	// this.container.style.display = "block";
-	// console.log(this.container.style.display);
-	// this.container.classList.remove("animate-bottom");
 }
