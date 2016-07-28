@@ -58,54 +58,53 @@
 
 	<script>
 
-	var tessarray = new Tessarray("image-container", {
-		containerClass: "container",
-		selectorClass: "selector",
-		resize: false,
-		defaultCategory: "photograph",
-		mountAnimationClass: "animate-bottom"
-	});
+	// var tessarray = new Tessarray("image-container", {
+	// 	containerClass: "container",
+	// 	selectorClass: "selector",
+	// 	resize: false,
+	// 	defaultCategory: "photograph",
+	// 	mountAnimationClass: "animate-bottom"
+	// });
 
-		// var ratios = sources.map(function(e) {return undefined});
-		// var layoutGeometry;
+	var tessarray = new Tessarray("image-container")
 
-		// var getRatios = function(sources) {
-		//  for (let i = 0; i < sources.length; i++) {
-		// 		let img = new Image();
-		// 		img.onload = function() { 
-		// 			ratios[i] = this.width / this.height; 
-		// 			loadRatios();
-		// 		};
-		// 		img.src = sources[i];
-		// 	}
-		// }
+	// var ratios = sources.map(function(e) {return undefined});
+	// var layoutGeometry;
 
-		// var loadRatios = function() {
-		// 	if (ratios.every(isTypeNumber)) {
-		// 		layoutGeometry = require('justified-layout')(ratios);
-		// 		renderBoxes();
-		// 	}
-		// }
+	// var getRatios = function(sources) {
+	//  for (let i = 0; i < sources.length; i++) {
+	// 		let img = new Image();
+	// 		img.onload = function() { 
+	// 			ratios[i] = this.width / this.height; 
+	// 			loadRatios();
+	// 		};
+	// 		img.src = sources[i];
+	// 	}
+	// }
 
-		// var isTypeNumber = function(ratio) {
-		// 	return typeof ratio === "number";
-		// }
+	// var loadRatios = function() {
+	// 	if (ratios.every(isTypeNumber)) {
+	// 		layoutGeometry = require('justified-layout')(ratios);
+	// 		renderBoxes();
+	// 	}
+	// }
 
-		// var renderBoxes = function() {
-		// 	var images = document.getElementsByClassName('image');
-		// 	for (var i = 0; i < images.length; i++) {
-		// 		images[i].style.width = layoutGeometry.boxes[i].width;
-		// 		images[i].style.height = layoutGeometry.boxes[i].height;
-		// 		images[i].style.top = layoutGeometry.boxes[i].top;
-		// 		images[i].style.left = layoutGeometry.boxes[i].left;
-		// 	}
-		// 	document.getElementsByClassName('container')[0].style.opacity = 1;
-		// }
-		
-		// getRatios(sources);
+	// var isTypeNumber = function(ratio) {
+	// 	return typeof ratio === "number";
+	// }
 
-
-
+	// var renderBoxes = function() {
+	// 	var images = document.getElementsByClassName('image');
+	// 	for (var i = 0; i < images.length; i++) {
+	// 		images[i].style.width = layoutGeometry.boxes[i].width;
+	// 		images[i].style.height = layoutGeometry.boxes[i].height;
+	// 		images[i].style.top = layoutGeometry.boxes[i].top;
+	// 		images[i].style.left = layoutGeometry.boxes[i].left;
+	// 	}
+	// 	document.getElementsByClassName('container')[0].style.opacity = 1;
+	// }
+	
+	// getRatios(sources);
 	</script>
 	
 </html>

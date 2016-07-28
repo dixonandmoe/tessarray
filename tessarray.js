@@ -22,12 +22,13 @@ var Tessarray = function(boxClass, options) {
 		this.boxObjects[i] = new GridBox(boxes[i], i);
 	}
 
-	// Run if container class is given
+	// If containerClass is given
 	if (this.options.containerClass) {
+		// Container class does nothing if resize or animations are not enabled
 		if (this.options.resize || this.options.mountAnimationClass) {
 			this.container = document.getElementsByClassName(this.options.containerClass)[0];
 			this.containerWidth = this.container.clientWidth;
-			// this.container.style.position = "relative";
+			this.container.style.position = "relative";
 		}
 
 		// Resize container upon window size change if container size is modified
@@ -36,7 +37,7 @@ var Tessarray = function(boxClass, options) {
 			window.addEventListener("resize", this.renderIfNecessary.bind(this))
 		}
 
-		// A
+		// Animate the mounting of boxes if 
 		if (this.options.mountAnimationClass) {
 			var mountAnimationClass = this.options.mountAnimationClass;
 			this.container.addEventListener('webkitAnimationEnd', function(){
@@ -45,20 +46,22 @@ var Tessarray = function(boxClass, options) {
 		}
 	}
 
+	// If given selectorClass is given
 	if (this.options.selectorClass) {
 		this.selectors = document.getElementsByClassName(this.options.selectorClass);
 		for (var i = 0; i < this.selectors.length; i++) {
 			var category = this.selectors[i].getAttribute('data-category');
 			this.selectors[i].addEventListener("click", this.sortByCategory.bind(this, category));
 		}
+	}
 
-		// Render default category, else render all boxes
-		if (this.options.defaultCategory) {
-			this.sortByCategory(this.options.defaultCategory);
-		} else {
-			this.setSelectedBoxes(this.boxObjects);
-			this.renderBoxes();
-		}
+	// If selectors are being used and there is a defaultCategory, render that category
+	if (this.options.selectorClass && this.options.defaultCategory) {
+		this.sortByCategory(this.options.defaultCategory);
+	// Else, render every box
+	} else {
+		this.setSelectedBoxes(this.boxObjects);
+		this.renderBoxes();
 	}
 }
 
@@ -132,9 +135,12 @@ Tessarray.prototype.renderIfNecessary = function() {
 }
 
 Tessarray.prototype.renderBoxes = function() {
-	this.containerWidth = this.container.clientWidth;
+	if (this.options.containerClass) {
+		this.containerWidth = this.container.clientWidth;
+	}
 
-	var layoutGeometry = require('justified-layout')(this.ratios, {containerWidth: this.containerWidth});
+	var layoutGeometry = require('justified-layout')(this.ratios, {containerWidth: this.containerWidth || 1060});
+	console.log(layoutGeometry);
 
 	// Display none to begin
 	for (var i = 0; i < this.boxNodes.length; i++) {
