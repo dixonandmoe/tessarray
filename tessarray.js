@@ -1,6 +1,6 @@
 document.write('<script src="justified-layout.js" type="text/javascript"></script>');
 
-// Grid needs styling. Opacity and positioning
+// Tessarray needs styling. Opacity and positioning
 
 var Tessarray = function(boxClass, options) {
 	// Set default values for options
@@ -19,7 +19,7 @@ var Tessarray = function(boxClass, options) {
 	for (var i = 0; i < boxes.length; i++) {
 		this.boxNodes[i] = boxes[i];
 		this.boxNodes[i].style.position = "absolute";
-		this.boxObjects[i] = new GridBox(boxes[i], i);
+		this.boxObjects[i] = new TessarrayBox(boxes[i], i);
 	}
 
 	// If containerClass is given
@@ -65,12 +65,16 @@ var Tessarray = function(boxClass, options) {
 	}
 }
 
+// This sets default values for options, checks against undefined rather than falsey
 Tessarray.prototype.setOptionValue = function(key, defaultValue) {
 	if (this.options[key] === undefined) {
 		this.options[key] = defaultValue;
 	}
 }
 
+// This function grabs the necessary information of the selectedBoxes (ratio and index),
+// while maintaining the selectedBoxes attribute for readability. This should be called
+// every time this.selectedBoxes is edited.
 Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
 	this.selectedBoxes = sortedBoxes;
 
@@ -83,10 +87,11 @@ Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
 	});
 }
 
-var GridBox = function(box, index) {
+
+var TessarrayBox = function(box, index) {
 	this.index = index;
 
-	// Create GridBox with an attribute of each class that returns the position value or null
+	// Create TessarrayBox with an attribute of each class that returns the position value or null
 	this.classes = {};
 	var classes = box.getAttribute('class').split(" ");
 	for (var i = 0; i < classes.length; i++) {
@@ -104,9 +109,9 @@ var GridBox = function(box, index) {
 	// have not yet been rendered.
 	// var source = box.querySelector('img').getAttribute('src');
 	// var img = new Image();
-	// var thisGridBox = this;	
+	// var thisTessarrayBox = this;	
 	// img.onload = function() {
-	// 	thisGridBox.aspectRatio = this.width / this.height;
+	// 	thisTessarrayBox.aspectRatio = this.width / this.height;
 	// }
 	// img.src = source;
 }
@@ -139,7 +144,8 @@ Tessarray.prototype.renderBoxes = function() {
 		this.containerWidth = this.container.clientWidth;
 	}
 
-	var layoutGeometry = require('justified-layout')(this.ratios, {containerWidth: this.containerWidth || 1060});
+	// var layoutGeometry = require('justified-layout')(this.ratios, this.options.flickrObject || this.containerWidth || 1060);
+	var layoutGeometry = require('justified-layout')(this.ratios, {containerWidth: this.containerWidth || 1060};
 	console.log(layoutGeometry);
 
 	// Display none to begin

@@ -5,7 +5,7 @@
 	<button class="selector" data-category="photograph">Photograph</button>
 	<button class="selector" data-category="not-photograph">not-photograph</button>
 	<div class="container animate-bottom">
-		<picture class="image-container photograph all" data-all="5" data-aspect-ratio="1.7808219178082192">	  
+		<picture class="box photograph all" data-all="5" data-aspect-ratio="1.7808219178082192">	  
 			<div class="container-2">
 			</div>
 			<div class="container-3">  
@@ -14,16 +14,16 @@
 				</div>
 			</div>
 		</picture>
-		<picture class="image-container photograph all" data-all="4" data-aspect-ratio="1.6363636363636365">		    
+		<picture class="box photograph all" data-all="4" data-aspect-ratio="1.6363636363636365">		    
 			<img class="image" src="./images/1605-Architecture-Creativity-wHY-Louisville-Speed-Art-Museum-01.jpg"/>
 		</picture>
-		<picture class="image-container not-photograph all" data-all="2" data-aspect-ratio="0.7049608355091384">		    
+		<picture class="box not-photograph all" data-all="2" data-aspect-ratio="0.7049608355091384">		    
 			<img class="image" src="./images/great-building-watercolor.jpg"/>
 		</picture>
-		<picture class="image-container photograph all" data-all="3" data-aspect-ratio="1.4997856836690955">		    
+		<picture class="box photograph all" data-all="3" data-aspect-ratio="1.4997856836690955">		    
 			<img class="image" src="./images/monograph-architecture-website-template-mezzanine-profile-01-a.jpg"/>
 		</picture>
-		<picture class="image-container not-photograph all" data-all="1" data-aspect-ratio="0.8803827751196173">
+		<picture class="box not-photograph all" data-all="1" data-aspect-ratio="0.8803827751196173">
 			<img class="image" src="./images/empty-opponent.png"/>
 		</picture>
 	</div>
@@ -58,7 +58,7 @@
 
 	<script>
 
-	// var tessarray = new Tessarray("image-container", {
+	// var tessarray = new Tessarray("box", {
 	// 	containerClass: "container",
 	// 	selectorClass: "selector",
 	// 	resize: false,
@@ -66,7 +66,7 @@
 	// 	mountAnimationClass: "animate-bottom"
 	// });
 
-	var tessarray = new Tessarray("image-container")
+	var tessarray = new Tessarray("box")
 
 	// var ratios = sources.map(function(e) {return undefined});
 	// var layoutGeometry;
