@@ -1,5 +1,5 @@
 <html>
-	<script src="justified-sort.js"></script>
+	<script src="tessarray.js"></script>
 	<h1>hey</h1>
 	<button class="selector" data-category="all">All</button>
 	<button class="selector" data-category="photograph">Photograph</button>
@@ -29,36 +29,36 @@
 	</div>
 
 	<style>
-	.image {
-		height: 100%;
-		width: 100%;
-		position: relative;
-	}
-	.container {
-		position: relative;
-	}
+		.image {
+			height: 100%;
+			width: 100%;
+			position: relative;
+		}
+		.container {
+			position: relative;
+		}
 
-	.animate-bottom {
-	  -webkit-animation-name: animatebottom;
-	  -webkit-animation-duration: 0.5s;
-	  animation-name: animatebottom;
-	  animation-duration: 0.5s
-	}
+		.animate-bottom {
+		  -webkit-animation-name: animatebottom;
+		  -webkit-animation-duration: 0.5s;
+		  animation-name: animatebottom;
+		  animation-duration: 0.5s
+		}
 
-	@-webkit-keyframes animatebottom {
-	  from { bottom:-100px; opacity:0 }
-	  to { bottom:0px; opacity:1 }
-	}
+		@-webkit-keyframes animatebottom {
+		  from { bottom:-100px; opacity:0 }
+		  to { bottom:0px; opacity:1 }
+		}
 
-	@keyframes animatebottom {
-	  from{ bottom:-100px; opacity:0 }
-	  to{ bottom:0; opacity:1 }
-	}
+		@keyframes animatebottom {
+		  from{ bottom:-100px; opacity:0 }
+		  to{ bottom:0; opacity:1 }
+		}
 	</style>
 
 	<script>
 
-	var jg = new JustifiedGrid("image-container", {
+	var tessarray = new Tessarray("image-container", {
 		containerClass: "container",
 		selectorClass: "selector",
 		resize: false,

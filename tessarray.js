@@ -2,7 +2,7 @@ document.write('<script src="justified-layout.js" type="text/javascript"></scrip
 
 // Grid needs styling. Opacity and positioning
 
-var JustifiedGrid = function(boxClass, options) {
+var Tessarray = function(boxClass, options) {
 	// Set default values for options
 	this.options = options || {};
 	this.setOptionValue("containerClass", false);
@@ -36,10 +36,11 @@ var JustifiedGrid = function(boxClass, options) {
 			window.addEventListener("resize", this.renderIfNecessary.bind(this))
 		}
 
+		// A
 		if (this.options.mountAnimationClass) {
+			var mountAnimationClass = this.options.mountAnimationClass;
 			this.container.addEventListener('webkitAnimationEnd', function(){
-				console.log(this);
-		  	this.classList.remove(this.options.mountAnimationClass);
+		  	this.classList.remove(mountAnimationClass);
 			}, false);
 		}
 	}
@@ -61,13 +62,13 @@ var JustifiedGrid = function(boxClass, options) {
 	}
 }
 
-JustifiedGrid.prototype.setOptionValue = function(key, defaultValue) {
+Tessarray.prototype.setOptionValue = function(key, defaultValue) {
 	if (this.options[key] === undefined) {
 		this.options[key] = defaultValue;
 	}
 }
 
-JustifiedGrid.prototype.setSelectedBoxes = function(sortedBoxes) {
+Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
 	this.selectedBoxes = sortedBoxes;
 
 	this.indexes = this.selectedBoxes.map(function(box) {
@@ -107,7 +108,7 @@ var GridBox = function(box, index) {
 	// img.src = source;
 }
 
-JustifiedGrid.prototype.sortByCategory = function(category) {
+Tessarray.prototype.sortByCategory = function(category) {
 	if (this.options.mountAnimationClass) {
 		this.container.classList.add(this.options.mountAnimationClass);
 	}
@@ -124,13 +125,13 @@ JustifiedGrid.prototype.sortByCategory = function(category) {
 	this.renderBoxes();
 }
 
-JustifiedGrid.prototype.renderIfNecessary = function() {
+Tessarray.prototype.renderIfNecessary = function() {
 	if (this.containerWidth !== this.container.clientWidth) {
 		this.renderBoxes();
 	}
 }
 
-JustifiedGrid.prototype.renderBoxes = function() {
+Tessarray.prototype.renderBoxes = function() {
 	this.containerWidth = this.container.clientWidth;
 
 	var layoutGeometry = require('justified-layout')(this.ratios, {containerWidth: this.containerWidth});
