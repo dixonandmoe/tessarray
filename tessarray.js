@@ -11,6 +11,8 @@ var Tessarray = function(boxClass, options) {
 	this.setOptionValue("resize", true);
 	this.setOptionValue("mountAnimationClass", false);
 	this.setOptionValue("unmountAnimationClass", false);
+	this.setOptionValue("transitionInClass", false);
+	this.setOptionValue("transitionInTime", 0);
 
 	// For each box, create an object that contains the data, and a reference to the node
 	this.boxObjects = [];
@@ -25,11 +27,11 @@ var Tessarray = function(boxClass, options) {
 	// If containerClass is given
 	if (this.options.containerClass) {
 		// Container class does nothing if resize or animations are not enabled
-		if (this.options.resize || this.options.mountAnimationClass) {
-			this.container = document.getElementsByClassName(this.options.containerClass)[0];
-			this.containerWidth = this.container.clientWidth;
-			this.container.style.position = "relative";
-		}
+		// if (this.options.resize || this.options.mountAnimationClass) {
+		this.container = document.getElementsByClassName(this.options.containerClass)[0];
+		this.containerWidth = this.container.clientWidth;
+		this.container.style.position = "relative";
+		// }
 
 		// Resize container upon window size change if container size is modified
 		if (this.options.resize) {
@@ -38,10 +40,16 @@ var Tessarray = function(boxClass, options) {
 		}
 
 		// Animate the mounting of boxes if 
-		if (this.options.mountAnimationClass) {
+		if (this.options.mountAnimationClass || this.options.unmountAnimationClass) {
 			var mountAnimationClass = this.options.mountAnimationClass;
 			this.container.addEventListener('webkitAnimationEnd', function(){
-		  	this.classList.remove(mountAnimationClass);
+				console.log(this.options.mountAnimationClass)
+				if (this.options.mountAnimationClass) {
+			  	this.classList.remove(mountAnimationClass);
+				}
+				if (this.options.unmountAnimationClass) {
+			  	this.classList.remove(unmountAnimationClass);
+				}
 			}, false);
 		}
 	}
@@ -54,6 +62,16 @@ var Tessarray = function(boxClass, options) {
 			this.selectors[i].addEventListener("click", this.sortByCategory.bind(this, category));
 		}
 	}
+	
+	if (this.options.transitionInClass) {
+		this.transitionIn = function(container) {
+			container.classList.add(this.options.transitionInClass);
+		}.bind(this);
+
+		this.transitionOut = function(container) {
+			container.classList.remove(this.options.transitionInClass)
+		}.bind(this);
+	}
 
 	// If selectors are being used and there is a defaultCategory, render that category
 	if (this.options.selectorClass && this.options.defaultCategory) {
@@ -61,8 +79,9 @@ var Tessarray = function(boxClass, options) {
 	// Else, render every box
 	} else {
 		this.setSelectedBoxes(this.boxObjects);
-		this.renderBoxes();
+		this.renderBoxes(this.transitionIn);
 	}
+
 }
 
 // This sets default values for options, checks against undefined rather than falsey
@@ -117,20 +136,24 @@ var TessarrayBox = function(box, index) {
 }
 
 Tessarray.prototype.sortByCategory = function(category) {
-	if (this.options.mountAnimationClass) {
-		this.container.classList.add(this.options.mountAnimationClass);
-	}
+	this.transitionOut(this.container);
 
-	var filteredBoxes = this.boxObjects.filter(function(box) {
-		return box.classes[category] !== undefined;
-	});
+	setTimeout(function(){
+		if (this.options.mountAnimationClass) {
+			this.container.classList.add(this.options.mountAnimationClass);
+		}
 
-	var sortedBoxes = filteredBoxes.sort(function(box) {
-		return box.classes[category];
-	});
+		var filteredBoxes = this.boxObjects.filter(function(box) {
+			return box.classes[category] !== undefined;
+		});
 
-	this.setSelectedBoxes(sortedBoxes);
-	this.renderBoxes();
+		var sortedBoxes = filteredBoxes.sort(function(box) {
+			return box.classes[category];
+		});
+
+		this.setSelectedBoxes(sortedBoxes);
+		this.renderBoxes(this.transitionIn);
+	}.bind(this), this.options.transitionInTime);
 }
 
 Tessarray.prototype.renderIfNecessary = function() {
@@ -139,21 +162,19 @@ Tessarray.prototype.renderIfNecessary = function() {
 	}
 }
 
-Tessarray.prototype.renderBoxes = function() {
+Tessarray.prototype.renderBoxes = function(callback) {
 	if (this.options.containerClass) {
 		this.containerWidth = this.container.clientWidth;
 	}
 
 	// var layoutGeometry = require('justified-layout')(this.ratios, this.options.flickrObject || this.containerWidth || 1060);
-	var layoutGeometry = require('justified-layout')(this.ratios, {containerWidth: this.containerWidth || 1060};
+	var layoutGeometry = require('justified-layout')(this.ratios, {containerWidth: this.containerWidth});
 	console.log(layoutGeometry);
 
 	// Display none to begin
 	for (var i = 0; i < this.boxNodes.length; i++) {
 		this.boxNodes[i].style.display = "none";
 	}
-
-	// this.container.style.height = layoutGeometry.containerHeight;
 
 	for (var i = 0; i < layoutGeometry.boxes.length; i++) {
 		var boxNode = this.boxNodes[this.indexes[i]];
@@ -163,5 +184,9 @@ Tessarray.prototype.renderBoxes = function() {
 		boxNode.style.left = box.left;
 		boxNode.style.top = box.top;
 		boxNode.style.width = box.width;
+	}		
+	console.log(callback);
+	if (callback) {
+		callback(this.container);
 	}
 }

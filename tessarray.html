@@ -4,7 +4,7 @@
 	<button class="selector" data-category="all">All</button>
 	<button class="selector" data-category="photograph">Photograph</button>
 	<button class="selector" data-category="not-photograph">not-photograph</button>
-	<div class="container animate-bottom">
+	<div class="container transition">
 		<picture class="box photograph all" data-all="5" data-aspect-ratio="1.7808219178082192">	  
 			<div class="container-2">
 			</div>
@@ -38,6 +38,17 @@
 			position: relative;
 		}
 
+		.transition {
+			opacity: 0;
+			bottom: -100px;
+			transition: opacity .25s linear, bottom .25s linear;
+		}
+
+		.transition-in {
+			bottom: 0px;
+			opacity: 1;
+		}
+
 		.animate-bottom {
 		  -webkit-animation-name: animatebottom;
 		  -webkit-animation-duration: 0.5s;
@@ -53,20 +64,39 @@
 		@keyframes animatebottom {
 		  from{ bottom:-100px; opacity:0 }
 		  to{ bottom:0; opacity:1 }
+
+ 		.unmount {
+		  -webkit-animation-name: unmount;
+		  -webkit-animation-duration: 0.5s;
+		  animation-name: unmount;
+		  animation-duration: 0.5s
+		}
+
+		@-webkit-keyframes unmount {
+		  from { bottom:0px; opacity:1 }
+		  to { bottom:-100px; opacity:0 }
+		}
+
+		@keyframes unmount {
+		  from{ bottom:0; opacity:1 }
+		  to{ bottom:-100px; opacity:0 }
 		}
 	</style>
 
 	<script>
 
-	// var tessarray = new Tessarray("box", {
-	// 	containerClass: "container",
-	// 	selectorClass: "selector",
-	// 	resize: false,
-	// 	defaultCategory: "photograph",
-	// 	mountAnimationClass: "animate-bottom"
-	// });
+	var tessarray = new Tessarray("box", {
+		containerClass: "container",
+		selectorClass: "selector",
+		resize: true,
+		transitionInClass: "transition-in",
+		transitionInTime: 250,
+		// defaultCategory: "photograph",
+		// mountAnimationClass: "animate-bottom",
+		// unmountAnimationClass: "unmount"
+	});
 
-	var tessarray = new Tessarray("box")
+	// var tessarray = new Tessarray("box")
 
 	// var ratios = sources.map(function(e) {return undefined});
 	// var layoutGeometry;
