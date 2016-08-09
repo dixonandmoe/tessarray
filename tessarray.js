@@ -26,12 +26,13 @@ var Tessarray = function(boxClass, options) {
 
 	// If containerClass is given
 	if (this.options.containerClass) {
-		// Container class does nothing if resize or animations are not enabled
-		// if (this.options.resize || this.options.mountAnimationClass) {
 		this.container = document.getElementsByClassName(this.options.containerClass)[0];
 		this.containerWidth = this.container.clientWidth;
-		this.container.style.position = "relative";
-		// }
+
+		// Gives container positioning if it has none
+		if (this.container.style === "") {
+			this.container.style.position = "relative";
+		}
 
 		// Resize container upon window size change if container size is modified
 		if (this.options.resize) {
@@ -54,7 +55,7 @@ var Tessarray = function(boxClass, options) {
 		}
 	}
 
-	// If given selectorClass is given
+	// If given selectorClass is given, bind selectors
 	if (this.options.selectorClass) {
 		this.selectors = document.getElementsByClassName(this.options.selectorClass);
 		for (var i = 0; i < this.selectors.length; i++) {
@@ -188,7 +189,6 @@ Tessarray.prototype.renderBoxes = function(callback) {
 		} 
 	}	
 
-	console.log(callback);
 	if (callback) {
 		callback(this.container);
 	}
