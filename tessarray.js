@@ -17,12 +17,14 @@ var Tessarray = function(boxClass, options) {
 	// For each box, create an object that contains the data, and a reference to the node
 	this.boxObjects = [];
 	this.boxNodes = [];
+	this.dimensionsLoaded = [];
 	var boxes = document.getElementsByClassName(boxClass);
 	for (var i = 0; i < boxes.length; i++) {
+		this.dimensionsLoaded.push(false);
 		this.boxNodes[i] = boxes[i];
 		this.boxNodes[i].style.position = "absolute";
 		this.boxNodes[i].style.transition = "transform .25s linear, height .25s linear, left .25s linear, top .25s linear, width .25s linear"
-		this.boxObjects[i] = new TessarrayBox(boxes[i], i);
+		this.boxObjects[i] = new TessarrayBox(boxes[i], i, this);
 	}
 
 	// Check if user specified containerWidth
@@ -53,7 +55,9 @@ var Tessarray = function(boxClass, options) {
 			this.selectors[i].addEventListener("click", this.sortByCategory.bind(this, category));
 		}
 	}
+}
 
+Tessarray.prototype.initialRender = function() {
 	// If selectors are being used and there is a defaultCategory, render that category
 	if (this.options.selectorClass && this.options.defaultCategory) {
 		this.sortByCategory(this.options.defaultCategory);
@@ -62,7 +66,6 @@ var Tessarray = function(boxClass, options) {
 		this.setSelectedBoxes(this.boxObjects);
 		this.renderBoxes();
 	}
-
 }
 
 // This sets default values for options, checks against undefined rather than falsey
@@ -96,8 +99,9 @@ Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
 	});
 }
 
-var TessarrayBox = function(box, index) {
+var TessarrayBox = function(box, index, tessarray) {
 	this.index = index;
+	this.tessarray = tessarray;
 
 	// Create TessarrayBox with an attribute of each class that returns the position value or null
 	this.classes = {};
@@ -109,22 +113,30 @@ var TessarrayBox = function(box, index) {
 	// Get aspect ratio
 	if (box.getAttribute('data-aspect-ratio')) {
 		this.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
+		tessarray.confirmLoad(index);
 	} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
 		this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
+		tessarray.confirmLoad(index);
 	} else {
 		// Else, get aspect ratio by find the image, loading it with JavaScript, and getting width and height
-		// There is an issue with how slowly this loads. When sort is called immediately, ratios 
-		// have not yet been rendered.
-		// var source = box.querySelector('img').getAttribute('src');
-		// var img = new Image();
-		// var thisTessarrayBox = this;	
-		// img.onload = function() {
-		// 	thisTessarrayBox.aspectRatio = this.width / this.height;
-		// }
-		// img.src = source;
+		var source = box.querySelector('img').getAttribute('src');
+		var img = new Image();
+		var thisBox = this;
+		img.onload = function() {
+			thisBox.aspectRatio = this.width / this.height;
+			tessarray.confirmLoad(index);
+		}
+		img.src = source;
 	}
 }
 
+Tessarray.prototype.confirmLoad = function(index) {
+	this.dimensionsLoaded[index] = true;
+	if (this.deterimineIfBoxesLoaded()) {
+		this.initialRender();
+	}
+}
+ 
 Tessarray.prototype.sortByCategory = function(category) {
 	var filteredBoxes = this.boxObjects.filter(function(box) {
 		return box.classes[category] !== undefined;
@@ -145,7 +157,17 @@ Tessarray.prototype.renderIfNecessary = function() {
 	}
 }
 
+Tessarray.prototype.deterimineIfBoxesLoaded = function() {
+	for (var i = 0; i < this.dimensionsLoaded.length; i++) {
+		if (!this.dimensionsLoaded[i]) {
+			return false;
+		}
+	}
+	return true;
+}
+
 Tessarray.prototype.renderBoxes = function() {
+
 	this.setContainerWidth();
 
 	var layoutGeometry = require('justified-layout')(this.ratios, this.options.flickr);
