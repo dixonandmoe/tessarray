@@ -4,8 +4,8 @@
 	<button class="selector" data-category="all">All</button>
 	<button class="selector" data-category="photograph">Photograph</button>
 	<button class="selector" data-category="not-photograph">not-photograph</button>
-	<div class="container transition">
-		<picture class="box photograph all" data-all="5" data-aspect-ratio="1.7808219178082192">	  
+	<div class="container">
+		<picture class="box photograph all" data-all="5">	  
 			<div class="container-2">
 			</div>
 			<div class="container-3">  
@@ -14,16 +14,16 @@
 				</div>
 			</div>
 		</picture>
-		<picture class="box photograph all" data-all="4" data-aspect-ratio="1.6363636363636365">		    
+		<picture class="box photograph all" data-all="4">		    
 			<img class="image" src="./images/1605-Architecture-Creativity-wHY-Louisville-Speed-Art-Museum-01.jpg"/>
 		</picture>
-		<picture class="box not-photograph all" data-all="2" data-aspect-ratio="0.7049608355091384">		    
+		<picture class="box not-photograph all" data-all="2">		    
 			<img class="image" src="./images/great-building-watercolor.jpg"/>
 		</picture>
-		<picture class="box photograph all" data-all="3" data-aspect-ratio="1.4997856836690955">		    
+		<picture class="box photograph all" data-all="3">		    
 			<img class="image" src="./images/monograph-architecture-website-template-mezzanine-profile-01-a.jpg"/>
 		</picture>
-		<picture class="box not-photograph all" data-all="1" data-aspect-ratio="0.8803827751196173">
+		<picture class="box not-photograph all" data-all="1">
 			<img class="image" src="./images/empty-opponent.png"/>
 		</picture>
 	</div>
@@ -44,6 +44,9 @@
 	var tessarray = new Tessarray("box", {
 		containerClass: "container",
 		selectorClass: "selector",
+		duration: 500,
+		defaultCategory: "all",
+		// timing_function: "linear",
 		flickr: {
 			targetRowHeight: 300,
 			targetRowHeightTolerance: 0.15,

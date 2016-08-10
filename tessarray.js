@@ -12,6 +12,9 @@ var Tessarray = function(boxClass, options) {
 	this.setOptionValue("selectorClass", false);
 	this.setOptionValue("defaultCategory", false);
 	this.setOptionValue("resize", true);
+	this.setOptionValue("timingFunction", "ease-in");
+	this.setOptionValue("duration", 250);
+	this.setOptionValue("delay", 0)
 	this.setOptionValue("flickr", {});
 
 	// For each box, create an object that contains the data, and a reference to the node
@@ -20,12 +23,14 @@ var Tessarray = function(boxClass, options) {
 	this.dimensionsLoaded = [];
 	this.loadNecessary = false;
 	var boxes = document.getElementsByClassName(boxClass);
+	var transition =  "transform "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, height "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, left "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, top "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, width "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, opacity "+ this.options.duration +"ms "+ this.options.timingFunction;
 	for (var i = 0; i < boxes.length; i++) {
 		this.boxNodes[i] = boxes[i];
 		this.boxNodes[i].style.position = "absolute";
 		this.boxNodes[i].style.opacity = 0;
 		this.boxObjects[i] = new TessarrayBox(boxes[i], i, this);
-		this.boxNodes[i].style.transition = "transform .25s ease-in, height .25s ease-in, left .25s ease-in, top .25s ease-in, width .25s ease-in, opacity .25s ease-in"
+		this.boxNodes[i].style.transition = transition;
+		this.boxNodes[i].style["-webkit-transition"] = transition;
 	}
 
 	// Check if user specified containerWidth
