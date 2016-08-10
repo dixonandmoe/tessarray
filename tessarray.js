@@ -18,13 +18,14 @@ var Tessarray = function(boxClass, options) {
 	this.boxObjects = [];
 	this.boxNodes = [];
 	this.dimensionsLoaded = [];
+	this.loadNecessary = false;
 	var boxes = document.getElementsByClassName(boxClass);
 	for (var i = 0; i < boxes.length; i++) {
-		this.dimensionsLoaded.push(false);
 		this.boxNodes[i] = boxes[i];
 		this.boxNodes[i].style.position = "absolute";
-		this.boxNodes[i].style.transition = "transform .25s linear, height .25s linear, left .25s linear, top .25s linear, width .25s linear"
+		this.boxNodes[i].style.opacity = 0;
 		this.boxObjects[i] = new TessarrayBox(boxes[i], i, this);
+		this.boxNodes[i].style.transition = "transform .25s ease-in, height .25s ease-in, left .25s ease-in, top .25s ease-in, width .25s ease-in, opacity .25s ease-in"
 	}
 
 	// Check if user specified containerWidth
@@ -55,6 +56,11 @@ var Tessarray = function(boxClass, options) {
 			this.selectors[i].addEventListener("click", this.sortByCategory.bind(this, category));
 		}
 	}
+
+	// Load immediately if dimensions do not need to be rendered from images
+	if (!this.loadNecessary) {
+		this.initialRender();
+	}
 }
 
 Tessarray.prototype.initialRender = function() {
@@ -77,7 +83,7 @@ Tessarray.prototype.setOptionValue = function(key, defaultValue) {
 
 // Update container width if it was not specified in flickr options
 Tessarray.prototype.setContainerWidth = function() {
-	if (!this.specifiedContainerWidth) {
+	if ((!this.specifiedContainerWidth) && (this.options.containerClass)) {
 		this.options.flickr.containerWidth = this.container.clientWidth;
 	}
 }
@@ -113,12 +119,12 @@ var TessarrayBox = function(box, index, tessarray) {
 	// Get aspect ratio
 	if (box.getAttribute('data-aspect-ratio')) {
 		this.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
-		tessarray.confirmLoad(index);
 	} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
 		this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
-		tessarray.confirmLoad(index);
 	} else {
 		// Else, get aspect ratio by find the image, loading it with JavaScript, and getting width and height
+		tessarray.loadNecessary = true;
+		tessarray.dimensionsLoaded[index] = false; 
 		var source = box.querySelector('img').getAttribute('src');
 		var img = new Image();
 		var thisBox = this;
@@ -159,7 +165,7 @@ Tessarray.prototype.renderIfNecessary = function() {
 
 Tessarray.prototype.deterimineIfBoxesLoaded = function() {
 	for (var i = 0; i < this.dimensionsLoaded.length; i++) {
-		if (!this.dimensionsLoaded[i]) {
+		if (this.dimensionsLoaded[i] === false) {
 			return false;
 		}
 	}
@@ -180,6 +186,7 @@ Tessarray.prototype.renderBoxes = function() {
 				boxNode.style.transform = "scale(0)";
 			} else {
 				boxNode.style.transform = "scale(1)";
+				boxNode.style.opacity = 1;
 				boxNode.style.height = box.height;
 				boxNode.style.left = box.left;
 				boxNode.style.top = box.top;
