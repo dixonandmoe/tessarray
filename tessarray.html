@@ -32,56 +32,6 @@
 		.image {
 			height: 100%;
 			width: 100%;
-			position: relative;
-		}
-		.container {
-			position: relative;
-		}
-
-		.transition {
-			transition: opacity .25s linear, bottom .25s linear;
-		}
-
-		.transition-in {
-			bottom: 0px;
-			opacity: 1;
-		}
-
-		.box {
-			transition: transform .25s linear, height .25s linear, left .25s linear, top .25s linear, width .25s linear;
-		}
-
-		.animate-bottom {
-		  -webkit-animation-name: animatebottom;
-		  -webkit-animation-duration: 0.5s;
-		  animation-name: animatebottom;
-		  animation-duration: 0.5s
-		}
-
-		@-webkit-keyframes animatebottom {
-		  from { bottom:-100px; opacity:0 }
-		  to { bottom:0px; opacity:1 }
-		}
-
-		@keyframes animatebottom {
-		  from{ bottom:-100px; opacity:0 }
-		  to{ bottom:0; opacity:1 }
-
- 		.unmount {
-		  -webkit-animation-name: unmount;
-		  -webkit-animation-duration: 0.5s;
-		  animation-name: unmount;
-		  animation-duration: 0.5s
-		}
-
-		@-webkit-keyframes unmount {
-		  from { bottom:0px; opacity:1 }
-		  to { bottom:-100px; opacity:0 }
-		}
-
-		@keyframes unmount {
-		  from{ bottom:0; opacity:1 }
-		  to{ bottom:-100px; opacity:0 }
 		}
 	</style>
 
@@ -90,12 +40,11 @@
 	var tessarray = new Tessarray("box", {
 		containerClass: "container",
 		selectorClass: "selector",
-		// resize: true,
-		// transitionInClass: "transition-in",
-		// transitionInTime: 250,
-		// defaultCategory: "photograph",
-		// mountAnimationClass: "animate-bottom",
-		// unmountAnimationClass: "unmount"
+		flickr: {
+			targetRowHeight: 300,
+			targetRowHeightTolerance: 0.5,
+			maxNumRows: 2
+		}
 	});
 
 	// var tessarray = new Tessarray("box")
