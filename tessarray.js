@@ -53,6 +53,17 @@ var Tessarray = function(boxClass, options) {
 		if (this.container.style.position === "") {
 			this.container.style.position = "relative";
 		}
+		
+		// Check if user specified containerPadding, this is used to calculate container height
+		if (this.options.flickr.containerPadding) {
+			if (this.options.flickr.containerPadding.bottom) {
+				this.containerPaddingBottom = this.options.flickr.containerPadding.bottom;
+			} else {
+				this.containerPaddingBottom = this.options.flickr.containerPadding;
+			}
+		} else {
+			this.containerPaddingBottom = 10;
+		}
 
 		// Resize container upon window size change if container size is modified
 		if (this.options.resize) {
@@ -156,7 +167,6 @@ Tessarray.prototype.containerLoad = function() {
 
 // Determines if every element that needs to load has loaded its dimensions
 Tessarray.prototype.deterimineIfBoxesLoaded = function() {
-	console.log(this.dimensionsLoaded)
 	for (var i = 0; i < this.dimensionsLoaded.length; i++) {
 		if (!this.dimensionsLoaded[i]) {
 			return false;
@@ -174,9 +184,7 @@ Tessarray.prototype.renderIfNecessary = function() {
 
 Tessarray.prototype.initialRender = function() {
 	if (this.options.containerClass) {
-		console.log(this.options.containerClass);
 		this.container.style.opacity = "1"; 
-		console.log(this.container.style.opacity)
 	}
 	// If selectors are being used and there is a defaultCategory, render that category
 	if (this.options.selectorClass && this.options.defaultCategory) {
@@ -186,7 +194,6 @@ Tessarray.prototype.initialRender = function() {
 		this.setSelectedBoxes(this.boxObjects);
 		this.renderBoxes();
 	}
-	console.log("InitialRender");
 }
 
 // Filter boxes by class, and then sort them by data-attribute values for that class
@@ -227,6 +234,12 @@ Tessarray.prototype.renderBoxes = function() {
 
 	// Get coordinates from Flickr Justified Layout
 	var layoutGeometry = require('justified-layout')(this.ratios, this.options.flickr);
+	console.log(layoutGeometry.boxes[-1]);
+
+	// Give container appropriate height for the images it contains.
+	if (this.options.containerClass) {
+		this.container.style.height = layoutGeometry.boxes[layoutGeometry.boxes.length - 1].top + layoutGeometry.boxes[layoutGeometry.boxes.length - 1].height + this.containerPaddingBottom;
+	}
 
 	// For each boxNode
 	for (var i = 0; i < this.boxNodes.length; i++) {

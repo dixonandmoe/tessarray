@@ -42,13 +42,13 @@
 	  <div class="box reverse buildings" data-reverse="3" data-aspect-ratio="1.77778">
 	    <img class="image" src="https://source.unsplash.com/category/buildings/800x600"/>
 	  </div>
-	  <!-- data-height="1200" data-width="900" --> 
-	  <div class="box reverse nature" data-reverse="2" data-aspect-ratio="1.77778">		    
-	    <img class="image" src="https://source.unsplash.com/category/nature/1200x900"/>
-	  </div>
 	  <!-- data-height="1080" data-width="1600" --> 
-	  <div class="box reverse buildings" data-reverse="1" data-aspect-ratio="0.675">
+	  <div class="box reverse buildings" data-reverse="2" data-aspect-ratio="0.675">
 	    <img class="image" src="https://source.unsplash.com/category/buildings/1080x1600"/>
+	  </div>
+	  <!-- data-height="1200" data-width="900" --> 
+	  <div class="box reverse nature" data-reverse="1" data-aspect-ratio="1.77778">		    
+	    <img class="image" src="https://source.unsplash.com/category/nature/1200x900"/>
 	  </div>
 	</div>
 
@@ -68,6 +68,11 @@
 		.container {
 		  opacity: 0;
 		}
+
+		/* Use this to specify default container height before images load */
+		.container {
+			height: 500px;
+		}
 	</style>
 
 	<script src='tessarray.js'></script>	
@@ -79,12 +84,13 @@
 
 			// Comment-in lines to see how options effect the render
 			// duration: 650,
-			defaultCategory: "people",
 			// timingFunction: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+			// defaultCategory: "people",
 			// flickr: {
-			// 	targetRowHeight: 300,
-			// 	targetRowHeightTolerance: 0.15,
-			// 	maxNumRows: 2
+				// targetRowHeight: 300,
+				// targetRowHeightTolerance: 0.15,
+				// maxNumRows: 2,
+				// containerPadding: 40
 			// }
 		});
 	</script>
