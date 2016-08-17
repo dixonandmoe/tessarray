@@ -98,27 +98,27 @@ var TessarrayBox = function(box, index, tessarray) {
 
 	// Get aspect ratio by data attributes
 	if (box.getAttribute('data-aspect-ratio')) {
-		tessarray.dimensionsLoaded[index] = false; 
-		this.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
-		var source = box.querySelector('img').getAttribute('src');
-		var img = new Image();
-		var thisBox = this;
-		img.onload = function() {
-			tessarray.confirmLoad(index);
-		}
-		img.src = source;	
-		// tessarray.setAspectRatio(tessarray, this, box, index, tessarray.confirmLoad);
+		// tessarray.dimensionsLoaded[index] = false; 
+		// this.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
+		// var source = box.querySelector('img').getAttribute('src');
+		// var img = new Image();
+		// var thisBox = this;
+		// img.onload = function() {
+		// 	tessarray.confirmLoad(index);
+		// }
+		// img.src = source;	
+		tessarray.setAspectRatio(tessarray, this, box, index);
 		} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
-		tessarray.dimensionsLoaded[index] = false; 	
-		this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
-		var source = box.querySelector('img').getAttribute('src');
-		var img = new Image();
-		var thisBox = this;
-		img.onload = function() {
-			tessarray.confirmLoad(index);
-		}
-		img.src = source;
-		// tessarray.setAspectRatio(tessarray, this, box, index, tessarray.confirmLoad);
+		// tessarray.dimensionsLoaded[index] = false; 	
+		// this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
+		// var source = box.querySelector('img').getAttribute('src');
+		// var img = new Image();
+		// var thisBox = this;
+		// img.onload = function() {
+		// 	tessarray.confirmLoad(index);
+		// }
+		// img.src = source;
+		tessarray.setAspectRatio(tessarray, this, box, index);
 	} else {
 		// Else, get aspect ratio by loading the image source into Javascript
 		tessarray.dimensionsLoaded[index] = false; 
@@ -133,16 +133,6 @@ var TessarrayBox = function(box, index, tessarray) {
 	}
 }
 
-// Tessarray.prototype.setAspectRatio = function(tessarray, tessarrayBox, box, index, callback) {
-// 	tessarray.dimensionsLoaded[index] = false;
-// 	if (box.getAttribute('data-aspect-ratio')) {
-// 		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
-// 		callback.bind(tessarray, index)();
-// 	} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
-// 		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
-// 		callback.bind(tessarray, index)();
-// 	} 
-// }
  
 // ------ Tessarray Functions ------
 // This sets default values for options, checks against undefined rather than falsey
@@ -157,6 +147,21 @@ Tessarray.prototype.setContainerWidth = function() {
 	if ((!this.specifiedContainerWidth) && (this.options.containerClass)) {
 		this.options.flickr.containerWidth = this.container.clientWidth;
 	}
+}
+
+Tessarray.prototype.setAspectRatio = function(tessarray, tessarrayBox, box, index) {
+	tessarray.dimensionsLoaded[index] = false;
+	if (box.getAttribute('data-aspect-ratio')) {
+		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
+	} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
+		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
+	}
+	var source = box.querySelector('img').getAttribute('src');
+	var img = new Image();
+	img.onload = function() {
+		tessarray.confirmLoad(index);
+	}
+	img.src = source;
 }
 
 // Set index of dimensionsLoaded to be true. If every element in dimensionsLoaded is either
@@ -244,7 +249,6 @@ Tessarray.prototype.renderBoxes = function() {
 
 	// Get coordinates from Flickr Justified Layout
 	var layoutGeometry = require('justified-layout')(this.ratios, this.options.flickr);
-	console.log(layoutGeometry.boxes[-1]);
 
 	// Give container appropriate height for the images it contains.
 	if (this.options.containerClass) {
