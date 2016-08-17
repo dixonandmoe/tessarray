@@ -107,6 +107,7 @@ var TessarrayBox = function(box, index, tessarray) {
 			tessarray.confirmLoad(index);
 		}
 		img.src = source;	
+		// tessarray.setAspectRatio(tessarray, this, box, index, tessarray.confirmLoad);
 		} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
 		tessarray.dimensionsLoaded[index] = false; 	
 		this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
@@ -117,10 +118,9 @@ var TessarrayBox = function(box, index, tessarray) {
 			tessarray.confirmLoad(index);
 		}
 		img.src = source;
+		// tessarray.setAspectRatio(tessarray, this, box, index, tessarray.confirmLoad);
 	} else {
 		// Else, get aspect ratio by loading the image source into Javascript
-		// This sets loadNecessary to true, preventing images from rendering before their aspect ratio has loaded
-		tessarray.loadNecessary = true;
 		tessarray.dimensionsLoaded[index] = false; 
 		var source = box.querySelector('img').getAttribute('src');
 		var img = new Image();
@@ -133,7 +133,17 @@ var TessarrayBox = function(box, index, tessarray) {
 	}
 }
 
-
+// Tessarray.prototype.setAspectRatio = function(tessarray, tessarrayBox, box, index, callback) {
+// 	tessarray.dimensionsLoaded[index] = false;
+// 	if (box.getAttribute('data-aspect-ratio')) {
+// 		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
+// 		callback.bind(tessarray, index)();
+// 	} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
+// 		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
+// 		callback.bind(tessarray, index)();
+// 	} 
+// }
+ 
 // ------ Tessarray Functions ------
 // This sets default values for options, checks against undefined rather than falsey
 Tessarray.prototype.setOptionValue = function(key, defaultValue) {
