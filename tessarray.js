@@ -11,6 +11,7 @@ require=function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requi
 
 // ------ Tessaray Initialization ------
 var Tessarray = function(boxClass, options) {
+	window.addEventListener( 'load', function() {console.log("dis shit dimensionsLoaded")} );
 	// Set default values for options
 	this.options = options || {};
 	this.setOptionValue("containerClass", false);
@@ -96,28 +97,8 @@ var TessarrayBox = function(box, index, tessarray) {
 		this.classes[classes[i]] = box.dataset[classes[i]] || null;
 	}
 
-	// Get aspect ratio by data attributes
-	if (box.getAttribute('data-aspect-ratio')) {
-		// tessarray.dimensionsLoaded[index] = false; 
-		// this.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
-		// var source = box.querySelector('img').getAttribute('src');
-		// var img = new Image();
-		// var thisBox = this;
-		// img.onload = function() {
-		// 	tessarray.confirmLoad(index);
-		// }
-		// img.src = source;	
-		tessarray.setAspectRatio(tessarray, this, box, index);
-		} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
-		// tessarray.dimensionsLoaded[index] = false; 	
-		// this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
-		// var source = box.querySelector('img').getAttribute('src');
-		// var img = new Image();
-		// var thisBox = this;
-		// img.onload = function() {
-		// 	tessarray.confirmLoad(index);
-		// }
-		// img.src = source;
+	// If data attribute for aspect ratio is set or data attribute for height and width are set
+	if (box.getAttribute('data-aspect-ratio') || (box.getAttribute('data-height') && box.getAttribute('data-width'))) {
 		tessarray.setAspectRatio(tessarray, this, box, index);
 	} else {
 		// Else, get aspect ratio by loading the image source into Javascript
@@ -155,13 +136,9 @@ Tessarray.prototype.setAspectRatio = function(tessarray, tessarrayBox, box, inde
 		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
 	} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
 		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
-	}
-	var source = box.querySelector('img').getAttribute('src');
-	var img = new Image();
-	img.onload = function() {
-		tessarray.confirmLoad(index);
-	}
-	img.src = source;
+	}	
+	var image = box.querySelector('img')
+	image.addEventListener('load', tessarray.confirmLoad.bind(tessarray, index));
 }
 
 // Set index of dimensionsLoaded to be true. If every element in dimensionsLoaded is either
