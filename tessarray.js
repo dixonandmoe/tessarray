@@ -11,7 +11,6 @@ require=function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requi
 
 // ------ Tessaray Initialization ------
 var Tessarray = function(boxClass, options) {
-	window.addEventListener( 'load', function() {console.log("dis shit dimensionsLoaded")} );
 	// Set default values for options
 	this.options = options || {};
 	this.setOptionValue("containerClass", false);
