@@ -28,7 +28,13 @@ var Tessarray = function(boxClass, options) {
 	// For each box, create an object that contains the data, and a reference to the node
 	this.boxObjects = [];
 	this.boxNodes = [];
-	var boxes = document.getElementsByClassName(boxClass);
+	// If containerClass is given, scope boxes to containerClass
+	var boxes;
+	if (this.options.containerClass) {
+		boxes = document.getElementsByClassName(this.options.containerClass)[0].getElementsByClassName(boxClass);
+	} else {
+		boxes = document.getElementsByClassName(boxClass);
+	}
 	var transition =  "transform "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, height "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, left "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, top "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, width "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, opacity "+ this.options.duration +"ms "+ this.options.timingFunction;
 	for (var i = 0; i < boxes.length; i++) {
 		this.boxNodes[i] = boxes[i];
