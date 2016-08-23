@@ -234,7 +234,8 @@ Tessarray.prototype.renderBoxes = function() {
 
 	// Give container appropriate height for the images it contains.
 	if (this.options.containerClass) {
-		this.container.style.height = layoutGeometry.boxes[layoutGeometry.boxes.length - 1].top + layoutGeometry.boxes[layoutGeometry.boxes.length - 1].height + this.containerPaddingBottom;
+		var height = layoutGeometry.boxes[layoutGeometry.boxes.length - 1].top + layoutGeometry.boxes[layoutGeometry.boxes.length - 1].height + this.containerPaddingBottom;
+		this.container.style.height = height.toString() + "px";
 	}
 
 	// For each boxNode
