@@ -142,8 +142,13 @@ Tessarray.prototype.setAspectRatio = function(tessarray, tessarrayBox, box, inde
 	} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
 		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
 	}	
-	var image = box.querySelector('img')
-	image.addEventListener('load', tessarray.confirmLoad.bind(tessarray, index));
+	var source = box.querySelector('img').getAttribute('src');
+	var img = new Image();
+	var thisBox = this;
+	img.onload = function() {
+		tessarray.confirmLoad(index);
+	}
+	img.src = source;
 }
 
 // Set index of dimensionsLoaded to be true. If every element in dimensionsLoaded is either
