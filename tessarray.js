@@ -35,14 +35,15 @@ var Tessarray = function(boxClass, options) {
 	} else {
 		boxes = document.getElementsByClassName(boxClass);
 	}
-	var transition =  "transform "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, height "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, left "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, top "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, width "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, opacity "+ this.options.duration +"ms "+ this.options.timingFunction;
+	var transition =  "transform "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, height "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, left "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, top "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, width "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, opacity "+ this.options.duration +"ms "+ "ease-in";
 	for (var i = 0; i < boxes.length; i++) {
 		this.boxNodes[i] = boxes[i];
 		this.boxNodes[i].style.position = "absolute";
 		this.boxNodes[i].style.opacity = "0";
-		this.boxObjects[i] = new TessarrayBox(boxes[i], i, this);
 		this.boxNodes[i].style.transition = transition;
 		this.boxNodes[i].style["-webkit-transition"] = transition;
+		console.log(this.boxNodes[i].style.transition);
+		this.boxObjects[i] = new TessarrayBox(boxes[i], i, this);
 	}
 
 	// Check if user specified containerWidth
@@ -51,7 +52,8 @@ var Tessarray = function(boxClass, options) {
 	// If containerClass is given
 	if (this.options.containerClass) {
 		this.container = document.getElementsByClassName(this.options.containerClass)[0];
-		this.container.style.opacity = "0"; 
+		// Do we need this to hide images?
+		// this.container.style.opacity = "0"; 
 		this.containerLoad();
 		this.setContainerWidth();
 
@@ -68,12 +70,12 @@ var Tessarray = function(boxClass, options) {
 				this.containerPaddingBottom = this.options.flickr.containerPadding;
 			}
 		} else {
+			// Flickr default containerPaddingBottom
 			this.containerPaddingBottom = 10;
 		}
 
 		// Resize container upon window size change if container size is modified
 		if (this.options.resize) {
-			this.setSelectedBoxes([]);
 			window.addEventListener("resize", this.renderIfNecessary.bind(this))
 		}
 	}
@@ -102,12 +104,14 @@ var TessarrayBox = function(box, index, tessarray) {
 		this.classes[classes[i]] = box.dataset[classes[i]] || null;
 	}
 
+	tessarray.dimensionsLoaded[index] = false; 
 	// If data attribute for aspect ratio is set or data attribute for height and width are set
 	if (box.getAttribute('data-aspect-ratio') || (box.getAttribute('data-height') && box.getAttribute('data-width'))) {
+		this.givenAspectRatio = true;
 		tessarray.setAspectRatio(tessarray, this, box, index);
 	} else {
 		// Else, get aspect ratio by loading the image source into Javascript
-		tessarray.dimensionsLoaded[index] = false; 
+		this.givenAspectRatio = false;
 		var source = box.querySelector('img').getAttribute('src');
 		var img = new Image();
 		var thisBox = this;
@@ -136,11 +140,12 @@ Tessarray.prototype.setContainerWidth = function() {
 }
 
 Tessarray.prototype.setAspectRatio = function(tessarray, tessarrayBox, box, index) {
-	tessarray.dimensionsLoaded[index] = false;
 	if (box.getAttribute('data-aspect-ratio')) {
 		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
+		tessarray.confirmLoad(index);
 	} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
 		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
+		tessarray.confirmLoad(index);
 	}	
 	// var image = box.querySelector('img')
 	// image.addEventListener('load', tessarray.confirmLoad.bind(tessarray, index));
@@ -148,7 +153,7 @@ Tessarray.prototype.setAspectRatio = function(tessarray, tessarrayBox, box, inde
 	var img = new Image();
 	var thisBox = this;
 	img.onload = function() {
-		tessarray.confirmLoad(index);
+		box.style.opacity = "1";
 	}
 	img.src = source;
 }
@@ -222,6 +227,7 @@ Tessarray.prototype.sortByCategory = function(category) {
 // This function grabs the necessary information of the selectedBoxes (ratio and index),
 // while maintaining the selectedBoxes attribute for readability
 Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
+	console.log("setSelectedBoxes")
 	this.selectedBoxes = sortedBoxes;
 	this.oldIndexes = this.indexes;
 	this.indexes = this.selectedBoxes.map(function(box) {
@@ -259,11 +265,15 @@ Tessarray.prototype.renderBoxes = function() {
 			// Else apply the Flickr data to selected
 			} else {
 				boxNode.style.transform = "scale(1)";
-				boxNode.style.opacity = "1";
 				boxNode.style.height = box.height + "px";
 				boxNode.style.left = box.left + "px";
 				boxNode.style.top = box.top + "px";
 				boxNode.style.width = box.width + "px";
+				// If the box does not define an aspect ratio, the image will have loaded by the time this is called
+				// and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
+				if (!this.boxObjects[i].givenAspectRatio) {
+					boxNode.style.opacity = "1";
+				}
 			}
 		// Else if not rendered in current filtration, but was rendered in a previous filtration, remove the 
 		// boxNode from sight
