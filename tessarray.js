@@ -42,7 +42,6 @@ var Tessarray = function(boxClass, options) {
 		this.boxNodes[i].style.opacity = "0";
 		this.boxNodes[i].style.transition = transition;
 		this.boxNodes[i].style["-webkit-transition"] = transition;
-		console.log(this.boxNodes[i].style.transition);
 		this.boxObjects[i] = new TessarrayBox(boxes[i], i, this);
 	}
 
@@ -227,7 +226,6 @@ Tessarray.prototype.sortByCategory = function(category) {
 // This function grabs the necessary information of the selectedBoxes (ratio and index),
 // while maintaining the selectedBoxes attribute for readability
 Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
-	console.log("setSelectedBoxes")
 	this.selectedBoxes = sortedBoxes;
 	this.oldIndexes = this.indexes;
 	this.indexes = this.selectedBoxes.map(function(box) {
