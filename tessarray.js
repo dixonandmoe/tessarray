@@ -51,8 +51,7 @@ var Tessarray = function(boxClass, options) {
 	// If containerClass is given
 	if (this.options.containerClass) {
 		this.container = document.getElementsByClassName(this.options.containerClass)[0];
-		// Do we need this to hide images?
-		// this.container.style.opacity = "0"; 
+		this.container.style.opacity = "0"; 
 		this.containerLoad();
 		this.setContainerWidth();
 
