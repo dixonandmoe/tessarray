@@ -58,7 +58,9 @@ var Tessarray = function(boxClass, options) {
 		this.container = document.getElementsByClassName(this.options.containerClass)[0];
 		this.container.style.opacity = "0"; 
 		if (this.options.containerTransition) {
-			this.container.style.transition = "opacity "+ this.options.containerTransition.duration +"ms "+ this.options.containerTransition.timingFunction + " " + this.options.containerTransition.delay + "ms";
+			var transition = "opacity "+ this.options.containerTransition.duration +"ms "+ this.options.containerTransition.timingFunction + " " + this.options.containerTransition.delay + "ms";
+			this.container.style.transition = transition;
+			this.container.style["-webkit-transition"] = transition;
 		}
 		this.containerLoad();
 		this.setContainerWidth();
@@ -144,12 +146,6 @@ var TessarrayBox = function(box, index, tessarray) {
 Tessarray.prototype.setOptionValue = function(key, defaultValue) {
 	if (this.options[key] === undefined) {
 		this.options[key] = defaultValue;
-	}
-}
-
-Tessarray.prototype.setContainerTransition = function(key, defaultValue) {
-	if (this.options.containerTransition[key] === undefined) {
-		this.options.containerTransition[key] = defaultValue;
 	}
 }
 
