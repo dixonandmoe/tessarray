@@ -15,11 +15,17 @@ var Tessarray = function(boxClass, options) {
 	this.options = options || {};
 	this.setOptionValue("containerClass", false);
 	this.setOptionValue("selectorClass", false);
+	this.setOptionValue("imageClass", false);
 	this.setOptionValue("defaultCategory", false);
 	this.setOptionValue("resize", true);
 	this.setOptionValue("timingFunction", "ease-in");
 	this.setOptionValue("duration", 375);
-	this.setOptionValue("delay", 0)
+	this.setOptionValue("delay", 0);
+	this.setOptionValue("containerTransition", {
+		duration: 375,
+		timingFunction: "ease-in",
+		delay: 0
+	});
 	this.setOptionValue("flickr", {});
 
 	// Instantiate variables to keep track of whether or not Tessarray needs to wait to load the image dimensions before rendering
@@ -35,11 +41,10 @@ var Tessarray = function(boxClass, options) {
 	} else {
 		boxes = document.getElementsByClassName(boxClass);
 	}
-	var transition =  "transform "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, height "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, left "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, top "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, width "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, opacity "+ this.options.duration +"ms "+ "ease-in";
+	var transition = "transform "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, height "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, left "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, top "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, width "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms";
 	for (var i = 0; i < boxes.length; i++) {
 		this.boxNodes[i] = boxes[i];
 		this.boxNodes[i].style.position = "absolute";
-		this.boxNodes[i].style.opacity = "0";
 		this.boxNodes[i].style.transition = transition;
 		this.boxNodes[i].style["-webkit-transition"] = transition;
 		this.boxObjects[i] = new TessarrayBox(boxes[i], i, this);
@@ -52,6 +57,9 @@ var Tessarray = function(boxClass, options) {
 	if (this.options.containerClass) {
 		this.container = document.getElementsByClassName(this.options.containerClass)[0];
 		this.container.style.opacity = "0"; 
+		if (this.options.containerTransition) {
+			this.container.style.transition = "opacity "+ this.options.containerTransition.duration +"ms "+ this.options.containerTransition.timingFunction + " " + this.options.containerTransition.delay + "ms";
+		}
 		this.containerLoad();
 		this.setContainerWidth();
 
@@ -102,15 +110,24 @@ var TessarrayBox = function(box, index, tessarray) {
 		this.classes[classes[i]] = box.dataset[classes[i]] || null;
 	}
 
+	// Set the image to be rendered in the box. If imageClass is given, use that class to find the element
+	if (tessarray.options.imageClass) {
+		this.image = box.getElementsByClassName(tessarray.options.imageClass)[0];
+	} else {
+		this.image = box.querySelector('img');
+	}
+	this.image.style.opacity = "0"; 
+	this.image.style.transition = "opacity "+ tessarray.options.duration +"ms "+ "ease-in";
+
 	tessarray.dimensionsLoaded[index] = false; 
 	// If data attribute for aspect ratio is set or data attribute for height and width are set
 	if (box.getAttribute('data-aspect-ratio') || (box.getAttribute('data-height') && box.getAttribute('data-width'))) {
 		this.givenAspectRatio = true;
-		tessarray.setAspectRatio(tessarray, this, box, index);
+		this.setAspectRatio(tessarray, box, index);
 	} else {
 		// Else, get aspect ratio by loading the image source into Javascript
 		this.givenAspectRatio = false;
-		var source = box.querySelector('img').getAttribute('src');
+		var source = this.image.getAttribute('src');
 		var img = new Image();
 		var thisBox = this;
 		img.onload = function() {
@@ -130,6 +147,12 @@ Tessarray.prototype.setOptionValue = function(key, defaultValue) {
 	}
 }
 
+Tessarray.prototype.setContainerTransition = function(key, defaultValue) {
+	if (this.options.containerTransition[key] === undefined) {
+		this.options.containerTransition[key] = defaultValue;
+	}
+}
+
 // Update container width if it was not specified in flickr options
 Tessarray.prototype.setContainerWidth = function() {
 	if ((!this.specifiedContainerWidth) && (this.options.containerClass)) {
@@ -137,21 +160,21 @@ Tessarray.prototype.setContainerWidth = function() {
 	}
 }
 
-Tessarray.prototype.setAspectRatio = function(tessarray, tessarrayBox, box, index) {
+TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
 	if (box.getAttribute('data-aspect-ratio')) {
-		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
+		this.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
 		tessarray.confirmLoad(index);
 	} else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
-		tessarrayBox.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
+		this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
 		tessarray.confirmLoad(index);
 	}	
 	// var image = box.querySelector('img')
 	// image.addEventListener('load', tessarray.confirmLoad.bind(tessarray, index));
-	var source = box.querySelector('img').getAttribute('src');
+	var source = this.image.getAttribute('src');
 	var img = new Image();
 	var thisBox = this;
 	img.onload = function() {
-		box.style.opacity = "1";
+		thisBox.image.style.opacity = "1";
 	}
 	img.src = source;
 }
@@ -190,9 +213,9 @@ Tessarray.prototype.renderIfNecessary = function() {
 }
 
 Tessarray.prototype.initialRender = function() {
-	if (this.options.containerClass) {
-		this.container.style.opacity = "1"; 
-	}
+	// if (this.options.containerClass) {
+	// 	this.container.style.opacity = "1"; 
+	// }
 	// If selectors are being used and there is a defaultCategory, render that category
 	if (this.options.selectorClass && this.options.defaultCategory) {
 		this.sortByCategory(this.options.defaultCategory);
@@ -248,6 +271,9 @@ Tessarray.prototype.renderBoxes = function() {
 		this.container.style.height = height.toString() + "px";
 	}
 
+	if (this.options.containerClass) {
+		this.container.style.opacity = "1"; 
+	}
 	// For each boxNode
 	for (var i = 0; i < this.boxNodes.length; i++) {
 		var boxNode = this.boxNodes[i];
@@ -269,7 +295,8 @@ Tessarray.prototype.renderBoxes = function() {
 				// If the box does not define an aspect ratio, the image will have loaded by the time this is called
 				// and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
 				if (!this.boxObjects[i].givenAspectRatio) {
-					boxNode.style.opacity = "1";
+					this.boxObjects[i].image.style.opacity = "1";
+					// boxNode.style.opacity = "1";
 				}
 			}
 		// Else if not rendered in current filtration, but was rendered in a previous filtration, remove the 
