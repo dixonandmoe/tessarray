@@ -7,6 +7,20 @@ Easy application of Flickr's Justified Layout with optional sorting and filterin
 ```js
 var tessarray = new Tessarray("box");
 ```
+```html
+<div class="box">
+	<img class="image" src="#" />
+</div>
+<div class="box">
+	<img class="image" src="#" />
+</div>
+```
+```css
+.image {
+	height: 100%;
+	width: 100%
+}
+```
 
 Resizes images to a flickr justified layout on initial render, just pass in the the class of the image containers.
 
