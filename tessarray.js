@@ -165,7 +165,10 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
 		tessarray.confirmLoad(index);
 	}	
 	// var image = box.querySelector('img')
-	// image.addEventListener('load', tessarray.confirmLoad.bind(tessarray, index));
+	// console.log(image.width);
+	// console.log(image.height);
+	// var thisBox = this;
+	// image.addEventListener('load', function() {console.log("bad thing"); thisBox.image.style.opacity = "1";});
 	var source = this.image.getAttribute('src');
 	var img = new Image();
 	var thisBox = this;

@@ -85,24 +85,27 @@
 
 	<script src='tessarray.js'></script>	
 	<script>
-		var tessarray = new Tessarray("box", {
-			// comment-out to see functionality without containerClass and selectorClass
-			containerClass: "container",
-			selectorClass: "selector",
+		setTimeout(function() {
+			var tessarray = new Tessarray("box", {
+				// comment-out to see functionality without containerClass and selectorClass
+				containerClass: "container",
+				selectorClass: "selector",
 
-			// Comment-in lines to see how options effect the render
-			duration: 650,
-			timingFunction: "cubic-bezier(0.215, 0.61, 0.355, 1)",
-			// imageClass: "imageClass",
-			// delay: 50,
-			// defaultCategory: "people",
-			// containerTransition: false,
-			// flickr: {
-				// targetRowHeight: 300,
-				// targetRowHeightTolerance: 0.15,
-				// maxNumRows: 2,
-				// containerPadding: 40
-			// }
-		});
+				// Comment-in lines to see how options effect the render
+				duration: 650,
+				timingFunction: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+				// imageClass: "imageClass",
+				// delay: 50,
+				// defaultCategory: "people",
+				// containerTransition: false,
+				// flickr: {
+					// targetRowHeight: 300,
+					// targetRowHeightTolerance: 0.15,
+					// maxNumRows: 2,
+					// containerPadding: 40
+				// }
+			});
+			console.log("set tessarray");
+		}, 5000);
 	</script>
 </html>
