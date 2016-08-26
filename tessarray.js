@@ -165,7 +165,8 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
 		tessarray.confirmLoad(index);
 	}	
 	// var image = box.querySelector('img')
-	// image.addEventListener('load', tessarray.confirmLoad.bind(tessarray, index));
+	// var thisBox = this;
+	// image.addEventListener('load', function() {thisBox.image.style.opacity = "1";});
 	var source = this.image.getAttribute('src');
 	var img = new Image();
 	var thisBox = this;
@@ -209,9 +210,9 @@ Tessarray.prototype.renderIfNecessary = function() {
 }
 
 Tessarray.prototype.initialRender = function() {
-	// if (this.options.containerClass) {
-	// 	this.container.style.opacity = "1"; 
-	// }
+	if (this.options.containerClass) {
+		this.container.style.opacity = "1";
+	}
 	// If selectors are being used and there is a defaultCategory, render that category
 	if (this.options.selectorClass && this.options.defaultCategory) {
 		this.sortByCategory(this.options.defaultCategory);
@@ -245,7 +246,7 @@ Tessarray.prototype.sortByCategory = function(category) {
 // while maintaining the selectedBoxes attribute for readability
 Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
 	this.selectedBoxes = sortedBoxes;
-	this.oldIndexes = this.indexes;
+	this.indexes ? this.oldIndexes = this.indexes : this.oldIndexes = [];
 	this.indexes = this.selectedBoxes.map(function(box) {
 		return box.index;
 	});
@@ -267,9 +268,9 @@ Tessarray.prototype.renderBoxes = function() {
 		this.container.style.height = height.toString() + "px";
 	}
 
-	if (this.options.containerClass) {
-		this.container.style.opacity = "1"; 
-	}
+	// if (this.options.containerClass) {
+	// 	this.container.style.opacity = "1"; 
+	// }
 	// For each boxNode
 	for (var i = 0; i < this.boxNodes.length; i++) {
 		var boxNode = this.boxNodes[i];
