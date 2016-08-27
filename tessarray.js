@@ -62,7 +62,6 @@ var Tessarray = function(boxClass, options) {
 			this.container.style.transition = transition;
 			this.container.style["-webkit-transition"] = transition;
 		}
-		this.containerLoad();
 		this.setContainerWidth();
 
 		// Give container relative positioning if it has none
@@ -86,6 +85,7 @@ var Tessarray = function(boxClass, options) {
 		if (this.options.resize) {
 			window.addEventListener("resize", this.renderIfNecessary.bind(this))
 		}
+		this.containerLoad();
 	}
 
 	// If given selectorClass is given, bind selectors
