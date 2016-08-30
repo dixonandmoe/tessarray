@@ -62,7 +62,6 @@ var Tessarray = function(boxClass, options) {
 			this.container.style.transition = transition;
 			this.container.style["-webkit-transition"] = transition;
 		}
-		this.containerLoad();
 		this.setContainerWidth();
 
 		// Give container relative positioning if it has none
@@ -86,6 +85,7 @@ var Tessarray = function(boxClass, options) {
 		if (this.options.resize) {
 			window.addEventListener("resize", this.renderIfNecessary.bind(this))
 		}
+		this.containerLoad();
 	}
 
 	// If given selectorClass is given, bind selectors
@@ -171,7 +171,8 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
 	var img = new Image();
 	var thisBox = this;
 	img.onload = function() {
-		thisBox.image.style.opacity = "1";
+		thisBox.image.style.opacity = "";
+		thisBox.image.style.transition = "";
 	}
 	img.src = source;
 }
@@ -268,9 +269,6 @@ Tessarray.prototype.renderBoxes = function() {
 		this.container.style.height = height.toString() + "px";
 	}
 
-	// if (this.options.containerClass) {
-	// 	this.container.style.opacity = "1"; 
-	// }
 	// For each boxNode
 	for (var i = 0; i < this.boxNodes.length; i++) {
 		var boxNode = this.boxNodes[i];
@@ -292,8 +290,9 @@ Tessarray.prototype.renderBoxes = function() {
 				// If the box does not define an aspect ratio, the image will have loaded by the time this is called
 				// and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
 				if (!this.boxObjects[i].givenAspectRatio) {
-					this.boxObjects[i].image.style.opacity = "1";
-					// boxNode.style.opacity = "1";
+					this.boxObjects[i].image.style.opacity = "";
+					this.boxObjects[i].image.style.transition = "";
+					// boxNode.style.opacity = "";
 				}
 			}
 		// Else if not rendered in current filtration, but was rendered in a previous filtration, remove the 
