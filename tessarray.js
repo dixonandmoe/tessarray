@@ -265,8 +265,12 @@ Tessarray.prototype.renderBoxes = function() {
 
 	// Give container appropriate height for the images it contains.
 	if (this.options.containerClass) {
-		var height = layoutGeometry.boxes[layoutGeometry.boxes.length - 1].top + layoutGeometry.boxes[layoutGeometry.boxes.length - 1].height + this.containerPaddingBottom;
-		this.container.style.height = height.toString() + "px";
+    if (layoutGeometry.boxes.length > 0) {
+      var height = layoutGeometry.boxes[layoutGeometry.boxes.length - 1].top + layoutGeometry.boxes[layoutGeometry.boxes.length - 1].height + this.containerPaddingBottom;
+      this.container.style.height = height.toString() + "px";
+    } else {
+      this.container.style.height = "0" + "px";
+    }
 	}
 
 	// For each boxNode
