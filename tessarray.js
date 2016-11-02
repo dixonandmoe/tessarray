@@ -256,6 +256,12 @@ Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
 	});
 }
 
+// Helper method to change the scale of boxNodes without overwriting their translated position
+Tessarray.prototype.scale = function(boxNode, scale) {
+  var transformStyle = boxNode.style.transform;
+  boxNode.style.transform = transformStyle.replace(/(scale\()(\d)(\))/, ("$1" + scale.toString() + "$3"));
+}
+
 // Render boxes
 Tessarray.prototype.renderBoxes = function() {
 	this.setContainerWidth();
@@ -269,7 +275,7 @@ Tessarray.prototype.renderBoxes = function() {
       var height = layoutGeometry.boxes[layoutGeometry.boxes.length - 1].top + layoutGeometry.boxes[layoutGeometry.boxes.length - 1].height + this.containerPaddingBottom;
       this.container.style.height = height.toString() + "px";
     } else {
-      this.container.style.height = "0" + "px";
+      this.container.style.height = "0px";
     }
 	}
 
@@ -283,29 +289,26 @@ Tessarray.prototype.renderBoxes = function() {
 			// If node is not supposed to be displayed, hide it. This means that it was not filtered out, but is 
 			// not being rendered due to Flickr options (such as showWidows: false)
 			if (box === undefined) {
-				boxNode.style.transform = "scale(0)";
+        this.scale(boxNode, 0);
 			// Else apply the Flickr data to selected
 			} else {
-				boxNode.style.transform = "scale(1)";
 				boxNode.style.height = box.height + "px";
-				boxNode.style.left = box.left + "px";
-				boxNode.style.top = box.top + "px";
+        boxNode.style.transform = `translate(${box.left + "px"}, ${box.top + "px"}) scale(1)`;
 				boxNode.style.width = box.width + "px";
 				// If the box does not define an aspect ratio, the image will have loaded by the time this is called
 				// and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
 				if (!this.boxObjects[i].givenAspectRatio) {
 					this.boxObjects[i].image.style.opacity = "";
 					this.boxObjects[i].image.style.transition = "";
-					// boxNode.style.opacity = "";
 				}
 			}
 		// Else if not rendered in current filtration, but was rendered in a previous filtration, remove the 
 		// boxNode from sight
 		} else if (this.oldIndexes.includes(i)) {
-			boxNode.style.transform = "scale(0)";
+      this.scale(boxNode, 0);
 		// Else if not in current or previous filtration (when a default category is selected), reduce scale to 0
 		} else {		
-			boxNode.style.transform = "scale(0)";
+      this.scale(boxNode, 0);
 		}
 	}	
 }
