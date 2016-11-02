@@ -293,7 +293,7 @@ Tessarray.prototype.renderBoxes = function() {
 			// Else apply the Flickr data to selected
 			} else {
 				boxNode.style.height = box.height + "px";
-        boxNode.style.transform = `translate(${box.left + "px"}, ${box.top + "px"}) scale(1)`;
+        boxNode.style.transform = "translate(" + box.left + "px, " + box.top + "px) scale(1)";
 				boxNode.style.width = box.width + "px";
 				// If the box does not define an aspect ratio, the image will have loaded by the time this is called
 				// and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
