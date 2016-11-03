@@ -34,6 +34,8 @@ var Tessarray = function(boxClass, options) {
 	// For each box, create an object that contains the data, and a reference to the node
 	this.boxObjects = [];
 	this.boxNodes = [];
+  this.transition = "transform "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, height "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, left "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, top "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, width "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms";
+
 	// If containerClass is given, scope boxes to containerClass
 	var boxes;
 	if (this.options.containerClass) {
@@ -41,22 +43,14 @@ var Tessarray = function(boxClass, options) {
 	} else {
 		boxes = document.getElementsByClassName(boxClass);
 	}
-	var transition = "transform "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, height "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, left "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, top "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, width "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms";
 
-  this.addTransition = function() {
-    console.log("added transition");
-    this.style.transition = transition;
-    this.style["-webkit-transition"] = transition;
-    this.removeEventListener('transitionend', arguments.callee);
-  }
-
+  // "transform 0ms ease-in 0ms, height 0ms ease-in 0ms, left 0ms ease-in 0ms, top 0ms ease-in 0ms, width 0ms ease-in 0ms"
 	for (var i = 0; i < boxes.length; i++) {
 		this.boxNodes[i] = boxes[i];
-    this.boxNodes[i].style.transition = "transform 0ms ease-in 0ms, height 0ms ease-in 0ms, left 0ms ease-in 0ms, top 0ms ease-in 0ms, width 0ms ease-in 0ms";
     this.boxNodes[i].style.position = "absolute";
-    this.boxNodes[i].addEventListener('transitionend', this.addTransition)
-    console.log(i, this.addTransition, this.boxNodes[i]);
-    this.boxNodes[i].style["-webkit-transition"] = "transform 0ms ease-in 0ms, height 0ms ease-in 0ms, left 0ms ease-in 0ms, top 0ms ease-in 0ms, width 0ms ease-in 0ms";
+    // this.boxNodes[i].addEventListener('transitionend', this.addTransition)
+    this.boxNodes[i].style.transition = "";
+    this.boxNodes[i].style["-webkit-transition"] = "";
 		this.boxObjects[i] = new TessarrayBox(boxes[i], i, this);
 	}
 
@@ -226,17 +220,18 @@ Tessarray.prototype.initialRender = function() {
 	}
 	// If selectors are being used and there is a defaultCategory, render that category
 	if (this.options.selectorClass && this.options.defaultCategory) {
-		this.sortByCategory(this.options.defaultCategory);
+		this.sortByCategory(this.options.defaultCategory, true);
 	// Else, render every box
 	} else {
 		this.setSelectedBoxes(this.boxObjects);
-		this.renderBoxes();
+		this.renderBoxes(true);
+    // this.addTransitionToAllBoxNodes()
 	}
 }
 
 // Filter boxes by class, and then sort them by data-attribute values for that class
 // Update sortedBoxes attribute and re-render the boxes
-Tessarray.prototype.sortByCategory = function(category) {
+Tessarray.prototype.sortByCategory = function(category, initialRender) {
 	if (category === "") {
 		var sortedBoxes = this.boxObjects;
 	} else {
@@ -250,7 +245,11 @@ Tessarray.prototype.sortByCategory = function(category) {
 	}
 
 	this.setSelectedBoxes(sortedBoxes);
-	this.renderBoxes();
+  if (initialRender === true) {
+  	this.renderBoxes(true);
+  } else {
+    this.renderBoxes();
+  }
 }
 
 // This function grabs the necessary information of the selectedBoxes (ratio and index),
@@ -269,11 +268,33 @@ Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
 // Helper method to change the scale of boxNodes without overwriting their translated position
 Tessarray.prototype.scale = function(boxNode, scale) {
   var transformStyle = boxNode.style.transform;
-  boxNode.style.transform = transformStyle.replace(/(scale\()(\d)(\))/, ("$1" + scale.toString() + "$3"));
+  if (transformStyle !== "") {
+    boxNode.style.transform = transformStyle.replace(/(scale\()(\d)(\))/, ("$1" + scale.toString() + "$3"));
+  } else {
+    boxNode.style.transform = "translate(0px, 0px) scale(" + scale.toString() + ")";
+  }
+  // var transformStyle = boxNode.style.transform;
+  // boxNode.style.transform = transformStyle.replace(/(scale\()(\d)(\))/, ("$1" + scale.toString() + "$3"));
+}
+
+Tessarray.prototype.addTransitionToAllBoxNodes = function() {
+  for (var i = 0; i < this.boxNodes.length; i++) {
+    this.boxNodes[i].style.transition = this.transition;
+    this.boxNodes[i].style["-webkit-transition"] = this.transition;
+  }
+}
+
+Tessarray.prototype.boxNodeStatus = function() {
+  for (var i = 0; i < this.boxNodes.length; i++) {
+    console.log("boxNode:", i);
+    console.log("transition:", this.boxNodes[i].style.transition);
+    console.log("transform:", this.boxNodes[i].style.transform);
+    console.log("opacity:", this.boxNodes[i].style.opacity);
+  }
 }
 
 // Render boxes
-Tessarray.prototype.renderBoxes = function() {
+Tessarray.prototype.renderBoxes = function(initialRender) {
 	this.setContainerWidth();
 
 	// Get coordinates from Flickr Justified Layout
@@ -289,6 +310,10 @@ Tessarray.prototype.renderBoxes = function() {
     }
 	}
 
+  if (!initialRender) {
+    this.addTransitionToAllBoxNodes();
+  }
+
 	// For each boxNode
 	for (var i = 0; i < this.boxNodes.length; i++) {
 		var boxNode = this.boxNodes[i];
@@ -302,16 +327,14 @@ Tessarray.prototype.renderBoxes = function() {
         this.scale(boxNode, 0);
 			// Else apply the Flickr data to selected
 			} else {
-        // boxNode.addEventListener('transitionend', function() {console.log('transition ended')})
         boxNode.style.transform = "translate(" + box.left + "px, " + box.top + "px) scale(1)";
-        // console.log(i, "boxNode transformed");
         boxNode.style.height = box.height + "px";
         boxNode.style.width = box.width + "px";
 				// If the box does not define an aspect ratio, the image will have loaded by the time this is called
 				// and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
 				if (!this.boxObjects[i].givenAspectRatio) {
-					this.boxObjects[i].image.style.opacity = "";
-					this.boxObjects[i].image.style.transition = "transform 0ms ease-in 0ms, height 0ms ease-in 0ms, left 0ms ease-in 0ms, top 0ms ease-in 0ms, width 0ms ease-in 0ms";;
+					// this.boxObjects[i].image.style.opacity = "";
+					// this.boxObjects[i].image.style.transition = "transform 0ms ease-in 0ms, height 0ms ease-in 0ms, left 0ms ease-in 0ms, top 0ms ease-in 0ms, width 0ms ease-in 0ms";;
 				}
 			}
 		// Else if not rendered in current filtration, but was rendered in a previous filtration, remove the 
@@ -323,4 +346,5 @@ Tessarray.prototype.renderBoxes = function() {
       this.scale(boxNode, 0);
 		}
 	}	
+  this.boxNodeStatus();
 }
