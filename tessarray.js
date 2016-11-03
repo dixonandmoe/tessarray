@@ -42,11 +42,21 @@ var Tessarray = function(boxClass, options) {
 		boxes = document.getElementsByClassName(boxClass);
 	}
 	var transition = "transform "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, height "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, left "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, top "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, width "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms";
+
+  this.addTransition = function() {
+    console.log("added transition");
+    this.style.transition = transition;
+    this.style["-webkit-transition"] = transition;
+    this.removeEventListener('transitionend', arguments.callee);
+  }
+
 	for (var i = 0; i < boxes.length; i++) {
 		this.boxNodes[i] = boxes[i];
-		this.boxNodes[i].style.position = "absolute";
-		this.boxNodes[i].style.transition = transition;
-		this.boxNodes[i].style["-webkit-transition"] = transition;
+    this.boxNodes[i].style.transition = "transform 0ms ease-in 0ms, height 0ms ease-in 0ms, left 0ms ease-in 0ms, top 0ms ease-in 0ms, width 0ms ease-in 0ms";
+    this.boxNodes[i].style.position = "absolute";
+    this.boxNodes[i].addEventListener('transitionend', this.addTransition)
+    console.log(i, this.addTransition, this.boxNodes[i]);
+    this.boxNodes[i].style["-webkit-transition"] = "transform 0ms ease-in 0ms, height 0ms ease-in 0ms, left 0ms ease-in 0ms, top 0ms ease-in 0ms, width 0ms ease-in 0ms";
 		this.boxObjects[i] = new TessarrayBox(boxes[i], i, this);
 	}
 
@@ -58,9 +68,9 @@ var Tessarray = function(boxClass, options) {
 		this.container = document.getElementsByClassName(this.options.containerClass)[0];
 		this.container.style.opacity = "0"; 
 		if (this.options.containerTransition) {
-			var transition = "opacity "+ this.options.containerTransition.duration +"ms "+ this.options.containerTransition.timingFunction + " " + this.options.containerTransition.delay + "ms";
-			this.container.style.transition = transition;
-			this.container.style["-webkit-transition"] = transition;
+			var containerTransition = "opacity "+ this.options.containerTransition.duration +"ms "+ this.options.containerTransition.timingFunction + " " + this.options.containerTransition.delay + "ms";
+			this.container.style.transition = containerTransition;
+			this.container.style["-webkit-transition"] = containerTransition;
 		}
 		this.setContainerWidth();
 
@@ -292,14 +302,16 @@ Tessarray.prototype.renderBoxes = function() {
         this.scale(boxNode, 0);
 			// Else apply the Flickr data to selected
 			} else {
-				boxNode.style.height = box.height + "px";
+        // boxNode.addEventListener('transitionend', function() {console.log('transition ended')})
         boxNode.style.transform = "translate(" + box.left + "px, " + box.top + "px) scale(1)";
-				boxNode.style.width = box.width + "px";
+        // console.log(i, "boxNode transformed");
+        boxNode.style.height = box.height + "px";
+        boxNode.style.width = box.width + "px";
 				// If the box does not define an aspect ratio, the image will have loaded by the time this is called
 				// and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
 				if (!this.boxObjects[i].givenAspectRatio) {
 					this.boxObjects[i].image.style.opacity = "";
-					this.boxObjects[i].image.style.transition = "";
+					this.boxObjects[i].image.style.transition = "transform 0ms ease-in 0ms, height 0ms ease-in 0ms, left 0ms ease-in 0ms, top 0ms ease-in 0ms, width 0ms ease-in 0ms";;
 				}
 			}
 		// Else if not rendered in current filtration, but was rendered in a previous filtration, remove the 
