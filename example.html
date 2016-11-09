@@ -12,27 +12,12 @@
 	<!-- Provide aspect ratio or height and width through data attributes, or don't specify any at all -->
 	<!-- Provide the aspect ratios either way for better performance -->
 	<div class="container">
-<!-- 	  <div class="box reverse">
-	    <img class="image" src="./images/151109151843-waf-interlace-sharp-1-exlarge-169.jpg"/>
-	  </div>
-	  <div class="box reverse">
-	    <img class="image" src="./images/1605-Architecture-Creativity-wHY-Louisville-Speed-Art-Museum-01.jpg"/>
-	  </div>
-	  <div class="box reverse">
-	    <img class="image" src="./images/empty-opponent.png"/>
-	  </div>
-	  <div class="box reverse">
-	    <img class="image" src="./images/great-building-watercolor.jpg"/>
-	  </div>
-	  <div class="box reverse">
-	    <img class="image" src="./images/monograph-architecture-website-template-mezzanine-profile-01-a.jpg"/>
-	  </div> -->
 		<!-- data-height="1080" data-width="1600" --> 
-	  <div class="box reverse people" data-reverse="10" data-aspect-ratio="0.675">
+	  <div class="box reverse people" data-reverse="10" data-height="1080" data-width="1600">
 	    <img class="image" src="https://source.unsplash.com/category/people/1080x1600"/>
 	  </div>
 	  <!-- data-height="720" data-width="1080" data-aspect-ratio="0.66666666666" --> 
-	  <div class="box reverse nature" data-reverse="9" data-height="720" data-width="1080">		    
+	  <div class="box reverse nature" data-reverse="9" data-aspect-ratio="0.66666666666">		    
 	    <img class="image" src="https://source.unsplash.com/category/nature/720x1080"/>
 	  </div>
 	  <!-- data-height="900" data-width="900" data-aspect-ratio="1" --> 
@@ -111,17 +96,17 @@
 				selectorClass: "selector",
 
 				// Comment-in lines to see how options effect the render
-				duration: 650,
-				timingFunction: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+				// duration: 650,
+				// timingFunction: "cubic-bezier(0.215, 0.61, 0.355, 1)",
 				// imageClass: "imageClass",
-				delay: 50,
-				defaultCategory: "people",
-				containerTransition: false,
+				// delay: 50,
+				// defaultCategory: "people",
+				// containerTransition: false,
 				flickr: {
 					targetRowHeight: 300,
 					targetRowHeightTolerance: 0.15,
-					maxNumRows: 2,
-					containerPadding: 40
+					// maxNumRows: 2,
+					// containerPadding: 40
 				}
 			});
 		}, 5000);

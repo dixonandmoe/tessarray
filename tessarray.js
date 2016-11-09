@@ -34,7 +34,8 @@ var Tessarray = function(boxClass, options) {
 	// For each box, create an object that contains the data, and a reference to the node
 	this.boxObjects = [];
 	this.boxNodes = [];
-  this.transition = "transform "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, height "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, left "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, top "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, width "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms";
+  // Save transition data for application after the first render
+  this.transition = "transform "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, height "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms, width "+ this.options.duration +"ms "+ this.options.timingFunction + " " + this.options.delay +"ms";
 
 	// If containerClass is given, scope boxes to containerClass
 	var boxes;
@@ -44,11 +45,11 @@ var Tessarray = function(boxClass, options) {
 		boxes = document.getElementsByClassName(boxClass);
 	}
 
-  // "transform 0ms ease-in 0ms, height 0ms ease-in 0ms, left 0ms ease-in 0ms, top 0ms ease-in 0ms, width 0ms ease-in 0ms"
 	for (var i = 0; i < boxes.length; i++) {
 		this.boxNodes[i] = boxes[i];
     this.boxNodes[i].style.position = "absolute";
-    // this.boxNodes[i].addEventListener('transitionend', this.addTransition)
+    this.boxNodes[i].style.height = "0px";
+    this.boxNodes[i].style.width = "0px";
     this.boxNodes[i].style.transition = "";
     this.boxNodes[i].style["-webkit-transition"] = "";
 		this.boxObjects[i] = new TessarrayBox(boxes[i], i, this);
@@ -168,9 +169,6 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
 		this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
 		tessarray.confirmLoad(index);
 	}	
-	// var image = box.querySelector('img')
-	// var thisBox = this;
-	// image.addEventListener('load', function() {thisBox.image.style.opacity = "1";});
 	var source = this.image.getAttribute('src');
 	var img = new Image();
 	var thisBox = this;
@@ -220,12 +218,13 @@ Tessarray.prototype.initialRender = function() {
 	}
 	// If selectors are being used and there is a defaultCategory, render that category
 	if (this.options.selectorClass && this.options.defaultCategory) {
+    // Pass in true to indicate that this is handling the initial render
 		this.sortByCategory(this.options.defaultCategory, true);
 	// Else, render every box
 	} else {
 		this.setSelectedBoxes(this.boxObjects);
+    // Pass in true to indicate that it is the first render
 		this.renderBoxes(true);
-    // this.addTransitionToAllBoxNodes()
 	}
 }
 
@@ -273,23 +272,12 @@ Tessarray.prototype.scale = function(boxNode, scale) {
   } else {
     boxNode.style.transform = "translate(0px, 0px) scale(" + scale.toString() + ")";
   }
-  // var transformStyle = boxNode.style.transform;
-  // boxNode.style.transform = transformStyle.replace(/(scale\()(\d)(\))/, ("$1" + scale.toString() + "$3"));
 }
 
-Tessarray.prototype.addTransitionToAllBoxNodes = function() {
+Tessarray.prototype.addTransitionToAllBoxNodes = function(callback) {
   for (var i = 0; i < this.boxNodes.length; i++) {
     this.boxNodes[i].style.transition = this.transition;
     this.boxNodes[i].style["-webkit-transition"] = this.transition;
-  }
-}
-
-Tessarray.prototype.boxNodeStatus = function() {
-  for (var i = 0; i < this.boxNodes.length; i++) {
-    console.log("boxNode:", i);
-    console.log("transition:", this.boxNodes[i].style.transition);
-    console.log("transform:", this.boxNodes[i].style.transform);
-    console.log("opacity:", this.boxNodes[i].style.opacity);
   }
 }
 
@@ -310,6 +298,7 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
     }
 	}
 
+  // If not the initial render, ensure that there are transitions for height, width and translate
   if (!initialRender) {
     this.addTransitionToAllBoxNodes();
   }
@@ -333,8 +322,7 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
 				// If the box does not define an aspect ratio, the image will have loaded by the time this is called
 				// and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
 				if (!this.boxObjects[i].givenAspectRatio) {
-					// this.boxObjects[i].image.style.opacity = "";
-					// this.boxObjects[i].image.style.transition = "transform 0ms ease-in 0ms, height 0ms ease-in 0ms, left 0ms ease-in 0ms, top 0ms ease-in 0ms, width 0ms ease-in 0ms";;
+					this.boxObjects[i].image.style.opacity = "";
 				}
 			}
 		// Else if not rendered in current filtration, but was rendered in a previous filtration, remove the 
@@ -346,5 +334,4 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
       this.scale(boxNode, 0);
 		}
 	}	
-  this.boxNodeStatus();
 }
