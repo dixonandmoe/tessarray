@@ -48,10 +48,6 @@ var Tessarray = function(boxClass, options) {
 	for (var i = 0; i < boxes.length; i++) {
 		this.boxNodes[i] = boxes[i];
     this.boxNodes[i].style.position = "absolute";
-    this.boxNodes[i].style.height = "0px";
-    this.boxNodes[i].style.width = "0px";
-    this.boxNodes[i].style.transition = "";
-    this.boxNodes[i].style["-webkit-transition"] = "";
 		this.boxObjects[i] = new TessarrayBox(boxes[i], i, this);
 	}
 
@@ -173,8 +169,7 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
 	var img = new Image();
 	var thisBox = this;
 	img.onload = function() {
-		thisBox.image.style.opacity = "";
-		thisBox.image.style.transition = "";
+		thisBox.image.style.opacity = "1";
 	}
 	img.src = source;
 }
@@ -301,7 +296,7 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
   // If not the initial render, ensure that there are transitions for height, width and translate
   if (!initialRender) {
     this.addTransitionToAllBoxNodes();
-  }
+  } 
 
 	// For each boxNode
 	for (var i = 0; i < this.boxNodes.length; i++) {
