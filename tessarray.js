@@ -122,7 +122,7 @@ var TessarrayBox = function(box, index, tessarray) {
   // Set the image to be rendered in the box. If imageClass is given, use that class to find the element
   if (tessarray.options.imageClass) {
     this.image = box.getElementsByClassName(tessarray.options.imageClass)[0];
-  } else (box.querySelector('img')) {
+  } else {
     this.image = box.querySelector('img');
   } 
 
@@ -131,6 +131,7 @@ var TessarrayBox = function(box, index, tessarray) {
     tessarray.confirmLoad(index);
     throw "one of the your images does not exist"
   }
+
   this.image.style.opacity = "0";
   this.image.style.transition = "opacity " + tessarray.options.duration + "ms " + "ease-in";
 
