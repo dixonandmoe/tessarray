@@ -50,7 +50,6 @@ For instace, this is a box that displays fifth when categorized by the class `do
 ## Options
 Tessarray comes with its own set of options as well as 
 
-
 ## License
 
 Open Source Licensed under the MIT license.
