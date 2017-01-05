@@ -23,7 +23,7 @@ npm: `npm install flickity --save`
 
 ## Usage
 
-Tessarray works with a set of boxes that contain images, an optional container, and optional selectors (not shown) 
+Tessarray works with container and a set of boxes that contain images.
 
 ```html
 <div class="container">
@@ -84,7 +84,6 @@ var tessarray = new Tessarray( 'box', {
 
   flickr: {}
   // pass in flickr justified layout options
-
 });
 ```
 A complete list of Flickr's Justified Layout options can be found [here.](http://flickr.github.io/justified-layout)

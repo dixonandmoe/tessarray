@@ -3,6 +3,7 @@
 // Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
 
 
+
 // ------ Flickr Justified Layout ------
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the MIT license.
@@ -68,7 +69,7 @@ var Tessarray = function(boxClass, options) {
     // Set this.container to be the first element with the containerClass
     this.container = document.getElementsByClassName(this.options.containerClass)[0];
 
-    // Set width of container to be the 
+    // Set width that is passed to the Justified Layout to be the current width of the container
     this.setContainerWidth();
 
     // Give container relative positioning if it has none
@@ -251,7 +252,9 @@ Tessarray.prototype.renderIfNecessary = function() {
   }
 }
 
+// Render the boxes for the first time
 Tessarray.prototype.initialRender = function() {
+  // If container class is given, make the container opaque
   if (this.options.containerClass) {
     this.container.style.opacity = "1";
   }
@@ -268,10 +271,9 @@ Tessarray.prototype.initialRender = function() {
 }
 
 // Filter boxes by class, and then sort them by data-attribute values for that class
-// Update sortedBoxes attribute and re-render the boxes
 Tessarray.prototype.sortByCategory = function(category, initialRender) {
   if (category === "") {
-    var sortedBoxes = this.boxObjects;
+    var sortedBoxes = this.boxOb jects;
   } else {
     var filteredBoxes = this.boxObjects.filter(function(box) {
       return box.classes[category] !== undefined;
@@ -282,6 +284,10 @@ Tessarray.prototype.sortByCategory = function(category, initialRender) {
     });
   }
 
+  // Update sortedBoxes attribute and re-render the boxes.
+  // Can't pass in initialRender because event is inadvertently passed as a parameter,
+  // and it is truthy. Might be able to add event.preventDefault() earlier, but it might be
+  // overwriting wanted user functionality.
   this.setSelectedBoxes(sortedBoxes);
   if (initialRender === true) {
     this.renderBoxes(true);
@@ -290,15 +296,22 @@ Tessarray.prototype.sortByCategory = function(category, initialRender) {
   }
 }
 
-// This function grabs the necessary information of the selectedBoxes (ratio and index),
+// Grab the necessary information of the selectedBoxes (ratio and index),
 // while maintaining the selectedBoxes attribute for readability
 Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
   this.selectedBoxes = sortedBoxes;
-  // Refactor shouldn't this.oldIndexes === this.indexes?
+
+  // Set current indexes to be oldIndexes
   this.indexes ? this.oldIndexes = this.indexes : this.oldIndexes = [];
+
+  // Create new this.indexes.
+  // this.indexes will be an array of indexes of boxes in the order that they are to be rendered.
+  // For example, if there were three boxes and they were to be showin in reverse order, this.indexes
+  // would be [2,1,0]
   this.indexes = this.selectedBoxes.map(function(box) {
     return box.index;
   });
+
   this.ratios = sortedBoxes.map(function(box) {
     return parseFloat(box.aspectRatio);
   });
@@ -307,6 +320,7 @@ Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
 // Helper method to change the scale of boxNodes without overwriting their translated position
 Tessarray.prototype.scale = function(boxNode, scale) {
   var transformStyle = boxNode.style.transform;
+  // If boxNode has a transform style already, change the scale but not the translation
   if (transformStyle !== "") {
     boxNode.style.transform = transformStyle.replace(/(scale\()(\d)(\))/, ("$1" + scale.toString() + "$3"));
   } else {
@@ -314,6 +328,7 @@ Tessarray.prototype.scale = function(boxNode, scale) {
   }
 }
 
+// Add transition to boxes. This is called every render except for the initial render
 Tessarray.prototype.addTransitionToAllBoxNodes = function(callback) {
   for (var i = 0; i < this.boxNodes.length; i++) {
     this.boxNodes[i].style.transition = this.transition;
@@ -321,7 +336,7 @@ Tessarray.prototype.addTransitionToAllBoxNodes = function(callback) {
   }
 }
 
-// Render boxes
+// Render the boxes with the correct coordinates
 Tessarray.prototype.renderBoxes = function(initialRender) {
   this.setContainerWidth();
 
@@ -339,6 +354,7 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
   }
 
   // If not the initial render, ensure that there are transitions for height, width and translate
+  // for each box
   if (!initialRender) {
     this.addTransitionToAllBoxNodes();
   } 
@@ -350,15 +366,18 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
     if (this.indexes.includes(i)) {
       // Grab the appropriate box information from Flickr Justified layout
       var box = layoutGeometry.boxes[this.indexes.indexOf(i)];
+
       // If node is not supposed to be displayed, hide it. This means that it was not filtered out, but is 
       // not being rendered due to Flickr options (such as showWidows: false)
       if (box === undefined) {
         this.scale(boxNode, 0);
+
       // Else apply the Flickr data to selected
       } else {
         boxNode.style.transform = "translate(" + box.left + "px, " + box.top + "px) scale(1)";
         boxNode.style.height = box.height + "px";
         boxNode.style.width = box.width + "px";
+        
         // If the box does not define an aspect ratio, the image will have loaded by the time this is called
         // and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
         if (!this.boxObjects[i].givenAspectRatio) {
