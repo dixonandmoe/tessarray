@@ -2,8 +2,6 @@
 // Copyright 2016 Dixon and Moe
 // Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
 
-
-
 // ------ Flickr Justified Layout ------
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the MIT license.
@@ -30,7 +28,7 @@ var Tessarray = function(boxClass, containerClass, options) {
   });
   this.setOptionValue("flickr", {});
 
-  // Set containerClass
+  // Set this.containerClass
   this.containerClass = containerClass;
 
   // Instantiate variables to keep track of whether or not Tessarray needs to wait to load the image dimensions before rendering
@@ -56,11 +54,13 @@ var Tessarray = function(boxClass, containerClass, options) {
   var invalidBoxNodeCount = 0;
   for (var i = 0; i < boxes.length; i++) {
     var newBoxObject = new TessarrayBox(boxes[i], i, this);
+
     // Add this newBoxObject to this.boxObjects and the node to this.boxNodes if there is a valid image
     if (newBoxObject.image) {
       this.boxObjects[i - invalidBoxNodeCount] = newBoxObject;
       this.boxNodes[i - invalidBoxNodeCount] = boxes[i];
       this.boxNodes[i - invalidBoxNodeCount].style.position = "absolute";
+
     // Else incremement counter to ensure there are not gaps in this.boxObjects or this.boxNodes arrays
     } else {
       invalidBoxNodeCount += 1;
@@ -82,8 +82,8 @@ var Tessarray = function(boxClass, containerClass, options) {
   // from Flickr's Justified Layout
   this.container.style.opacity = "0"; 
 
-  // Set containerTransition to container if it exists. User could set containerTransition to false
-  // for no container transitions.
+  // Set containerTransition to container if containerTransition exists. User could set containerTransition
+  // to false for no container transitions.
   if (this.options.containerTransition) {
     var containerTransition = "opacity " + this.options.containerTransition.duration + "ms " + this.options.containerTransition.timingFunction + " " + this.options.containerTransition.delay + "ms";
     this.container.style.transition = containerTransition;
@@ -92,19 +92,23 @@ var Tessarray = function(boxClass, containerClass, options) {
 
   // If user specified containerPadding, use it to calculate height
   if (this.options.flickr.containerPadding) {
+
     // If user passed a number, use the number
     if (typeof this.options.flickr.containerPadding === "number") {
       this.containerPaddingBottom = this.options.flickr.containerPadding;
-    // If user passed an object and bottom is truthy, use that value
+
+    // Else if user passed an object and bottom is truthy, use that value
     } else if (this.options.flickr.containerPadding.bottom) {
       this.containerPaddingBottom = this.options.flickr.containerPadding.bottom;
+
     // If user passed an object and bottom is not truthy, use 0
     // This prevents breaking if user does not put bottom in the object
     } else {
       this.containerPaddingBottom = 0;
     }
+
+  // Else use the Flickr default containerPaddingBottom for height calculation
   } else {
-    // Else use the Flickr default containerPaddingBottom for height calculation
     this.containerPaddingBottom = 10;
   }
 
@@ -166,6 +170,7 @@ var TessarrayBox = function(box, index, tessarray) {
   if (box.getAttribute('data-aspect-ratio') || (box.getAttribute('data-height') && box.getAttribute('data-width'))) {
     this.givenAspectRatio = true;
     this.setAspectRatio(tessarray, box, index);
+
   // Else, get aspect ratio by loading the image source into Javascript, then confirmLoad once
   // the image has loaded
   } else {
@@ -259,12 +264,15 @@ Tessarray.prototype.initialRender = function() {
 
   // If selectors are being used and there is a defaultCategory, render that category
   if (this.options.selectorClass && this.options.defaultCategory) {
+
     // Pass in true to indicate that this is handling the initial render
     this.sortByCategory(this.options.defaultCategory, true);
+
   // Else, render every box
   } else {
     this.setSelectedBoxes(this.boxObjects);
-    // Pass in true to indicate that it is the first render
+
+    // Pass true to indicate that this is the initial render
     this.renderBoxes(true);
   }
 }
@@ -356,8 +364,10 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
   // For each boxNode
   for (var i = 0; i < this.boxNodes.length; i++) {
     var boxNode = this.boxNodes[i];
+
     // If this box is to be rendered in the current filteration
     if (this.indexes.includes(i)) {
+
       // Grab the appropriate box information from Flickr Justified layout
       var box = layoutGeometry.boxes[this.indexes.indexOf(i)];
 
@@ -368,13 +378,13 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
         boxNode.style.height = box.height + "px";
         boxNode.style.width = box.width + "px";
 
-        // CHECK THIS
         // If the box does not define an aspect ratio, the image will have loaded by the time this is called
         // and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
         if (!this.boxObjects[i].givenAspectRatio) {
           this.boxObjects[i].image.style.opacity = "1";
         }
       }
+
     // Else remove the boxNode from sight
     } else {
       this.scale(boxNode, 0);
