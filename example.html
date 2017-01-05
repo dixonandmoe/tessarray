@@ -22,7 +22,7 @@
         <img class="image" src="https://source.unsplash.com/category/nature/720x1080"/>
       </div>
       <!-- data-height="900" data-width="900" data-aspect-ratio="1" --> 
-      <div class="box reverse nature" data-reverse="8" data-aspect-ratio="1">       
+      <div class="box reverse nature" data-reverse="8" data-aspect-ratio="1">
         <img class="image" src="https://source.unsplash.com/category/nature/900x900"/>
       </div>
       <!-- data-height="1600" data-width="900" data-aspect-ratio="1.77777777778"--> 
@@ -81,9 +81,9 @@
     }
 
     /* Use this if images are appearing before rendering correctly */
-/*    .container {
+    .container {
       opacity: 0;
-    }*/
+    }
 
     /* Use this to specify default container height before images load */
 /*    .container {
@@ -103,18 +103,18 @@
   </script>
   <script>
     // setTimeout(function() {
-      var tessarray = new Tessarray("box", {
-        // comment-out to see functionality without containerClass and selectorClass
-        containerClass: "container",
+      var tessarray = new Tessarray("box", "container", {
         selectorClass: "selector",
 
         // Comment-in lines to see how options effect the render
-        // duration: 650,
-        // timingFunction: "cubic-bezier(0.215, 0.61, 0.355, 1)",
-        // delay: 50,
         // imageClass: "imageClass",
         // defaultCategory: "people",
         // containerTransition: false,
+        // boxTransition: {
+        //   duration: 650,
+        //   timingFunction: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+        //   delay: 50,
+        // },
         flickr: {
           targetRowHeight: 300,
           targetRowHeightTolerance: 0.15,

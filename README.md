@@ -39,12 +39,8 @@ Tessarray works with container and a set of boxes that contain images.
 ### Options
 
 ``` js
-var tessarray = new Tessarray( 'box', {
+var tessarray = new Tessarray('box', 'container', {
   // Options, defaults listed
-
-  containerClass: false,
-  // Add container class to allow features such as resizing upon window resize,
-  // container transitions, and explicit height setting.
 
   selectorClass: false,
   // Add selectorClass if you want to be able to sort and filter the boxes.
@@ -68,9 +64,11 @@ var tessarray = new Tessarray( 'box', {
   // Allows the resizing of the window to trigger a re-rendering of the boxes 
   // if containerClass is given and the container is not statically sized
 
-  timingFunction: 'ease-in',
-  duration: 375,
-  delay: 0,
+  boxTransition: {
+    timingFunction: 'ease-in',
+    duration: 375,
+    delay: 0,
+  }
   // Options for box transitions. This transition data is used when boxes are
   // faded in (upon load), resized, moved, and scaled in and out.
 

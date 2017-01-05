@@ -11,17 +11,18 @@ require=function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requi
 
 
 // ------ Tessaray Initialization ------
-var Tessarray = function(boxClass, options) {
+var Tessarray = function(boxClass, containerClass, options) {
   // Set default values for options
   this.options = options || {};
-  this.setOptionValue("containerClass", false);
   this.setOptionValue("selectorClass", false);
   this.setOptionValue("imageClass", false);
   this.setOptionValue("defaultCategory", false);
   this.setOptionValue("resize", true);
-  this.setOptionValue("timingFunction", "ease-in");
-  this.setOptionValue("duration", 375);
-  this.setOptionValue("delay", 0);
+  this.setOptionValue("boxTransition", {
+    duration: 375,
+    timingFunction: "ease-in",
+    delay: 0
+  });
   this.setOptionValue("containerTransition", {
     duration: 375,
     timingFunction: "ease-in",
@@ -29,25 +30,27 @@ var Tessarray = function(boxClass, options) {
   });
   this.setOptionValue("flickr", {});
 
+  // Set containerClass
+  this.containerClass = containerClass;
+
   // Instantiate variables to keep track of whether or not Tessarray needs to wait to load the image dimensions before rendering
   this.dimensionsLoaded = [];
   this.containerHasLoaded = false;
+
   // Save transition data that is applied after the first render
-  this.transition = "transform " + this.options.duration + "ms " + this.options.timingFunction + " " + this.options.delay + "ms, height " + this.options.duration + "ms " + this.options.timingFunction + " " + this.options.delay + "ms, width " + this.options.duration + "ms " + this.options.timingFunction + " " + this.options.delay + "ms";
+  this.transition = "transform " + this.options.boxTransition.duration + "ms " + this.options.boxTransition.timingFunction + " " + this.options.boxTransition.delay + "ms, height " + this.options.boxTransition.duration + "ms " + this.options.boxTransition.timingFunction + " " + this.options.boxTransition.delay + "ms, width " + this.options.boxTransition.duration + "ms " + this.options.boxTransition.timingFunction + " " + this.options.boxTransition.delay + "ms";
+
   // Check if user specified containerWidth
   this.specifiedContainerWidth = !!this.options.flickr.containerWidth;
+
   // Array of html nodes of each box
   this.boxNodes = [];
+
   // Array of javascript objects representing each box
   this.boxObjects = [];
 
-  // If containerClass is given, scope boxes to containerClass
-  var boxes;
-  if (this.options.containerClass) {
-    boxes = document.getElementsByClassName(this.options.containerClass)[0].getElementsByClassName(boxClass);
-  } else {
-    boxes = document.getElementsByClassName(boxClass);
-  }
+  // Scope boxes to containerClass
+  var boxes = document.getElementsByClassName(this.containerClass)[0].getElementsByClassName(boxClass);
 
   // For each box node create a newBoxObject
   var invalidBoxNodeCount = 0;
@@ -64,58 +67,55 @@ var Tessarray = function(boxClass, options) {
     }
   }
 
-  // If containerClass is given
-  if (this.options.containerClass) {
-    // Set this.container to be the first element with the containerClass
-    this.container = document.getElementsByClassName(this.options.containerClass)[0];
+  // Set this.container to be the first element with the containerClass
+  this.container = document.getElementsByClassName(this.containerClass)[0];
 
-    // Set width that is passed to the Justified Layout to be the current width of the container
-    this.setContainerWidth();
+  // Set width that is passed to the Justified Layout to be the current width of the container
+  this.setContainerWidth();
 
-    // Give container relative positioning if it has none
-    if (this.container.style.position === "") {
-      this.container.style.position = "relative";
-    }
-
-    // Give container opacity of 0, this will be changed to 1 once a the first layout geometry is loaded
-    // from Flickr's Justified Layout
-    this.container.style.opacity = "0"; 
-
-    // Set containerTransition to container if it exists. User could set containerTransition to false
-    // for no container transitions.
-    if (this.options.containerTransition) {
-      var containerTransition = "opacity " + this.options.containerTransition.duration + "ms " + this.options.containerTransition.timingFunction + " " + this.options.containerTransition.delay + "ms";
-      this.container.style.transition = containerTransition;
-      this.container.style["-webkit-transition"] = containerTransition;
-    }
-
-    // If user specified containerPadding, use it to calculate height
-    if (this.options.flickr.containerPadding) {
-      // If user passed a number, use the number
-      if (typeof this.options.flickr.containerPadding === "number") {
-        this.containerPaddingBottom = this.options.flickr.containerPadding;
-      // If user passed an object and bottom is truthy, use that value
-      } else if (this.options.flickr.containerPadding.bottom) {
-        this.containerPaddingBottom = this.options.flickr.containerPadding.bottom;
-      // If user passed an object and bottom is not truthy, use 0
-      // This prevents breaking if user does not put bottom in the object
-      } else {
-        this.containerPaddingBottom = 0;
-      }
-    } else {
-      // Else use the Flickr default containerPaddingBottom for height calculation
-      this.containerPaddingBottom = 10;
-    }
-
-    // If this.options.resize, resize the container upon window size change if 
-    // container size is modified
-    if (this.options.resize) {
-      window.addEventListener("resize", this.renderIfNecessary.bind(this))
-    }
-
-    // Confirm that this.container has the correct data and is ready to render
-    this.containerLoad();
+  // Give container relative positioning if it has none
+  if (this.container.style.position === "") {
+    this.container.style.position = "relative";
   }
+
+  // Give container opacity of 0, this will be changed to 1 once a the first layout geometry is loaded
+  // from Flickr's Justified Layout
+  this.container.style.opacity = "0"; 
+
+  // Set containerTransition to container if it exists. User could set containerTransition to false
+  // for no container transitions.
+  if (this.options.containerTransition) {
+    var containerTransition = "opacity " + this.options.containerTransition.duration + "ms " + this.options.containerTransition.timingFunction + " " + this.options.containerTransition.delay + "ms";
+    this.container.style.transition = containerTransition;
+    this.container.style["-webkit-transition"] = containerTransition;
+  }
+
+  // If user specified containerPadding, use it to calculate height
+  if (this.options.flickr.containerPadding) {
+    // If user passed a number, use the number
+    if (typeof this.options.flickr.containerPadding === "number") {
+      this.containerPaddingBottom = this.options.flickr.containerPadding;
+    // If user passed an object and bottom is truthy, use that value
+    } else if (this.options.flickr.containerPadding.bottom) {
+      this.containerPaddingBottom = this.options.flickr.containerPadding.bottom;
+    // If user passed an object and bottom is not truthy, use 0
+    // This prevents breaking if user does not put bottom in the object
+    } else {
+      this.containerPaddingBottom = 0;
+    }
+  } else {
+    // Else use the Flickr default containerPaddingBottom for height calculation
+    this.containerPaddingBottom = 10;
+  }
+
+  // If this.options.resize, resize the container upon window size change if 
+  // container size is modified
+  if (this.options.resize) {
+    window.addEventListener("resize", this.renderIfNecessary.bind(this))
+  }
+
+  // Confirm that this.container has the correct data and is ready to render
+  this.containerLoad();
 
   // If given selectorClass is given, bind sortByCategory to the click of each selector
   if (this.options.selectorClass) {
@@ -160,7 +160,7 @@ var TessarrayBox = function(box, index, tessarray) {
 
   // Render the image invisible until it is loaded
   this.image.style.opacity = "0";
-  this.image.style.transition = "opacity " + tessarray.options.duration + "ms " + "ease-in";
+  this.image.style.transition = "opacity " + tessarray.options.boxTransition.duration + "ms " + "ease-in";
 
   // If data attribute for aspect ratio is set or data attribute for height and width are set
   if (box.getAttribute('data-aspect-ratio') || (box.getAttribute('data-height') && box.getAttribute('data-width'))) {
@@ -193,7 +193,7 @@ Tessarray.prototype.setOptionValue = function(key, defaultValue) {
 // Update container width to be the width of the container element if container width was
 // not specified
 Tessarray.prototype.setContainerWidth = function() {
-  if ((!this.specifiedContainerWidth) && (this.options.containerClass)) {
+  if (!this.specifiedContainerWidth) {
     this.options.flickr.containerWidth = this.container.clientWidth;
   }
 }
@@ -222,7 +222,7 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
 // true or undefined, then the intial render is called. 
 Tessarray.prototype.confirmLoad = function(index) {
   this.dimensionsLoaded[index] = true;
-  if ((this.deterimineIfBoxesLoaded()) && ((this.containerHasLoaded) || (!this.options.containerClass))) {
+  if (this.deterimineIfBoxesLoaded() && this.containerHasLoaded) {
     this.initialRender();
   }
 }
@@ -254,10 +254,9 @@ Tessarray.prototype.renderIfNecessary = function() {
 
 // Render the boxes for the first time
 Tessarray.prototype.initialRender = function() {
-  // If container class is given, make the container opaque
-  if (this.options.containerClass) {
-    this.container.style.opacity = "1";
-  }
+  // Make the container opaque
+  this.container.style.opacity = "1";
+
   // If selectors are being used and there is a defaultCategory, render that category
   if (this.options.selectorClass && this.options.defaultCategory) {
     // Pass in true to indicate that this is handling the initial render
@@ -273,7 +272,7 @@ Tessarray.prototype.initialRender = function() {
 // Filter boxes by class, and then sort them by data-attribute values for that class
 Tessarray.prototype.sortByCategory = function(category, initialRender) {
   if (category === "") {
-    var sortedBoxes = this.boxOb jects;
+    var sortedBoxes = this.boxObjects;
   } else {
     var filteredBoxes = this.boxObjects.filter(function(box) {
       return box.classes[category] !== undefined;
@@ -300,9 +299,6 @@ Tessarray.prototype.sortByCategory = function(category, initialRender) {
 // while maintaining the selectedBoxes attribute for readability
 Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
   this.selectedBoxes = sortedBoxes;
-
-  // Set current indexes to be oldIndexes
-  this.indexes ? this.oldIndexes = this.indexes : this.oldIndexes = [];
 
   // Create new this.indexes.
   // this.indexes will be an array of indexes of boxes in the order that they are to be rendered.
@@ -344,13 +340,11 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
   var layoutGeometry = require('justified-layout')(this.ratios, this.options.flickr);
 
   // Give container appropriate height for the images it contains.
-  if (this.options.containerClass) {
-    if (layoutGeometry.boxes.length > 0) {
-      var height = layoutGeometry.boxes[layoutGeometry.boxes.length - 1].top + layoutGeometry.boxes[layoutGeometry.boxes.length - 1].height + this.containerPaddingBottom;
-      this.container.style.height = height.toString() + "px";
-    } else {
-      this.container.style.height = "0px";
-    }
+  if (layoutGeometry.boxes.length > 0) {
+    var height = layoutGeometry.boxes[layoutGeometry.boxes.length - 1].top + layoutGeometry.boxes[layoutGeometry.boxes.length - 1].height + this.containerPaddingBottom;
+    this.container.style.height = height.toString() + "px";
+  } else {
+    this.container.style.height = "0px";
   }
 
   // If not the initial render, ensure that there are transitions for height, width and translate
@@ -367,29 +361,22 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
       // Grab the appropriate box information from Flickr Justified layout
       var box = layoutGeometry.boxes[this.indexes.indexOf(i)];
 
-      // If node is not supposed to be displayed, hide it. This means that it was not filtered out, but is 
-      // not being rendered due to Flickr options (such as showWidows: false)
-      if (box === undefined) {
-        this.scale(boxNode, 0);
-
-      // Else apply the Flickr data to selected
-      } else {
+      // Apply Flickr data to the selected box unless box is undefined. Box can be undefined if it was not
+      // filtered out, but is not rendered due to Flickr options (such as showWidows: false).
+      if (box !== undefined) {
         boxNode.style.transform = "translate(" + box.left + "px, " + box.top + "px) scale(1)";
         boxNode.style.height = box.height + "px";
         boxNode.style.width = box.width + "px";
-        
+
+        // CHECK THIS
         // If the box does not define an aspect ratio, the image will have loaded by the time this is called
         // and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
         if (!this.boxObjects[i].givenAspectRatio) {
-          this.boxObjects[i].image.style.opacity = "";
+          this.boxObjects[i].image.style.opacity = "1";
         }
       }
-    // Else if not rendered in current filtration, but was rendered in a previous filtration, remove the 
-    // boxNode from sight
-    } else if (this.oldIndexes.includes(i)) {
-      this.scale(boxNode, 0);
-    // Else if not in current or previous filtration (when a default category is selected), reduce scale to 0
-    } else {    
+    // Else remove the boxNode from sight
+    } else {
       this.scale(boxNode, 0);
     }
   } 
