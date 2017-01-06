@@ -1,6 +1,6 @@
 # Tessarray
 
-Easy application of Flickr's Justified Layout with optional sorting and filtering.
+Responsive application of Flickr's Justified Layout with optional sorting and filtering.
 
 ## Install
 ### Download
@@ -68,7 +68,7 @@ var tessarray = new Tessarray('box', 'container', {
     timingFunction: 'ease-in',
     duration: 375,
     delay: 0,
-  }
+  },
   // Options for box transitions. This transition data is used when boxes are
   // faded in (upon load), resized, moved, and scaled in and out.
 
@@ -77,14 +77,14 @@ var tessarray = new Tessarray('box', 'container', {
     timingFunction: 'ease-in',
     delay: 0
   },
-  // Options for container transition. Used once initial dimensions for 
+  // Options for container transition. Used once when initial dimensions for 
   // each box are loaded. 
 
   flickr: {}
-  // pass in flickr justified layout options
+  // Pass in your Justified Layout options that differ from the defaults
 });
 ```
-A complete list of Flickr's Justified Layout options can be found [here.](http://flickr.github.io/justified-layout)
+A complete list of Flickr's Justified Layout options and defaults can be found [here.](http://flickr.github.io/justified-layout)
 
 ## License
 Open Source Licensed under the MIT license.

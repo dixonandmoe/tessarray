@@ -9,34 +9,47 @@ require=function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requi
 
 
 // ------ Tessaray Initialization ------
-var Tessarray = function(boxClass, containerClass, options) {
+var Tessarray = function(boxSelector, containerSelector, options) {
   // Set default values for options
   this.options = options || {};
   this.setOptionValue("selectorClass", false);
   this.setOptionValue("imageClass", false);
   this.setOptionValue("defaultCategory", false);
   this.setOptionValue("resize", true);
-  this.setOptionValue("boxTransition", {
+  this.setOptionValue("boxTransformTransition", {
+    duration: 500,
+    timingFunction: "ease-in",
+    delay: 0
+  });
+  this.setOptionValue("boxTransformOutTransition", {
+    duration: 250,
+    timingFunction: "ease-in",
+    delay: 0
+  });
+  this.setOptionValue("boxOpacityTransition", {
     duration: 375,
     timingFunction: "ease-in",
     delay: 0
   });
-  this.setOptionValue("containerTransition", {
+  this.setOptionValue("containerOpacityTransition", {
     duration: 375,
     timingFunction: "ease-in",
     delay: 0
   });
   this.setOptionValue("flickr", {});
 
-  // Set this.containerClass
-  this.containerClass = containerClass;
+  // Set container
+  this.container = document.querySelector(containerSelector);
 
   // Instantiate variables to keep track of whether or not Tessarray needs to wait to load the image dimensions before rendering
   this.dimensionsLoaded = [];
   this.containerHasLoaded = false;
 
   // Save transition data that is applied after the first render
-  this.transition = "transform " + this.options.boxTransition.duration + "ms " + this.options.boxTransition.timingFunction + " " + this.options.boxTransition.delay + "ms, height " + this.options.boxTransition.duration + "ms " + this.options.boxTransition.timingFunction + " " + this.options.boxTransition.delay + "ms, width " + this.options.boxTransition.duration + "ms " + this.options.boxTransition.timingFunction + " " + this.options.boxTransition.delay + "ms";
+  this.boxOpacityTransition = "opacity " + this.options.boxOpacityTransition.duration + "ms " + this.options.boxOpacityTransition.timingFunction + " " + this.options.boxOpacityTransition.delay + "ms";
+  this.containerOpacityTransition = "opacity " + this.options.containerOpacityTransition.duration + "ms " + this.options.containerOpacityTransition.timingFunction + " " + this.options.containerOpacityTransition.delay + "ms";
+  this.boxTransformTransition = "transform " + this.options.boxTransformTransition.duration + "ms " + this.options.boxTransformTransition.timingFunction + " " + this.options.boxTransformTransition.delay + "ms, height " + this.options.boxTransformTransition.duration + "ms " + this.options.boxTransformTransition.timingFunction + " " + this.options.boxTransformTransition.delay + "ms, width " + this.options.boxTransformTransition.duration + "ms " + this.options.boxTransformTransition.timingFunction + " " + this.options.boxTransformTransition.delay + "ms, " + this.boxOpacityTransition;
+  this.boxTransformOutTransition = "transform " + this.options.boxTransformOutTransition.duration + "ms " + this.options.boxTransformOutTransition.timingFunction + " " + this.options.boxTransformOutTransition.delay + "ms";
 
   // Check if user specified containerWidth
   this.specifiedContainerWidth = !!this.options.flickr.containerWidth;
@@ -47,8 +60,8 @@ var Tessarray = function(boxClass, containerClass, options) {
   // Array of javascript objects representing each box
   this.boxObjects = [];
 
-  // Scope boxes to containerClass
-  var boxes = document.getElementsByClassName(this.containerClass)[0].getElementsByClassName(boxClass);
+  // Scope boxes to containerSelector
+  var boxes = this.container.querySelectorAll(boxSelector);
 
   // For each box node create a newBoxObject
   var invalidBoxNodeCount = 0;
@@ -60,15 +73,14 @@ var Tessarray = function(boxClass, containerClass, options) {
       this.boxObjects[i - invalidBoxNodeCount] = newBoxObject;
       this.boxNodes[i - invalidBoxNodeCount] = boxes[i];
       this.boxNodes[i - invalidBoxNodeCount].style.position = "absolute";
+      // this.boxNodes[i - invalidBoxNodeCount].style.transform = this.boxTransformTransition;
+
 
     // Else incremement counter to ensure there are not gaps in this.boxObjects or this.boxNodes arrays
     } else {
       invalidBoxNodeCount += 1;
     }
   }
-
-  // Set this.container to be the first element with the containerClass
-  this.container = document.getElementsByClassName(this.containerClass)[0];
 
   // Set width that is passed to the Justified Layout to be the current width of the container
   this.setContainerWidth();
@@ -82,12 +94,12 @@ var Tessarray = function(boxClass, containerClass, options) {
   // from Flickr's Justified Layout
   this.container.style.opacity = "0"; 
 
-  // Set containerTransition to container if containerTransition exists. User could set containerTransition
+  // Set containerOpacityTransition to container if containerOpacityTransition exists. User could set containerOpacityTransition
   // to false for no container transitions.
-  if (this.options.containerTransition) {
-    var containerTransition = "opacity " + this.options.containerTransition.duration + "ms " + this.options.containerTransition.timingFunction + " " + this.options.containerTransition.delay + "ms";
-    this.container.style.transition = containerTransition;
-    this.container.style["-webkit-transition"] = containerTransition;
+  if (this.options.containerOpacityTransition) {
+    // var containerOpacityTransition = "opacity " + this.options.containerOpacityTransition.duration + "ms " + this.options.containerOpacityTransition.timingFunction + " " + this.options.containerOpacityTransition.delay + "ms";
+    this.container.style.transition = this.containerOpacityTransition;
+    this.container.style["-webkit-transition"] = this.containerOpacityTransition;
   }
 
   // If user specified containerPadding, use it to calculate height
@@ -148,9 +160,12 @@ var TessarrayBox = function(box, index, tessarray) {
     this.classes[classes[i]] = box.dataset[classes[i]] || null;
   }
 
-  // Find the image to be rendered in the box. If imageClass is given, use that class to find the element
+  // Find the image to be rendered in the box. If imageClass is given, use that class to find the element.
+  // If the box itself is an image, use the box.
   if (tessarray.options.imageClass) {
     this.image = box.getElementsByClassName(tessarray.options.imageClass)[0];
+  } else if (box.tagName === "IMG") {
+    this.image = box;
   } else {
     this.image = box.querySelector('img');
   } 
@@ -162,9 +177,10 @@ var TessarrayBox = function(box, index, tessarray) {
     throw "one of the your images does not exist"
   }
 
-  // Render the image invisible until it is loaded
-  this.image.style.opacity = "0";
-  this.image.style.transition = "opacity " + tessarray.options.boxTransition.duration + "ms " + "ease-in";
+  // Render the box invisible until it is loaded
+  box.style.opacity = "0";
+  box.style.transition = tessarray.boxOpacityTransition;
+  // this.image.style.transition = "opacity " + tessarray.options.boxTransition.duration + "ms " + "ease-in";
 
   // If data attribute for aspect ratio is set or data attribute for height and width are set
   if (box.getAttribute('data-aspect-ratio') || (box.getAttribute('data-height') && box.getAttribute('data-width'))) {
@@ -181,6 +197,7 @@ var TessarrayBox = function(box, index, tessarray) {
     img.onload = function() {
       thisBox.aspectRatio = this.width / this.height;
       tessarray.confirmLoad(index);
+      box.style.opacity = "1";
     }
     img.src = source;
   }
@@ -216,9 +233,9 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
   } 
   var source = this.image.getAttribute('src');
   var img = new Image();
-  var thisBox = this;
+  var thisBoxObj = this;
   img.onload = function() {
-    thisBox.image.style.opacity = "1";
+    box.style.opacity = "1";
   }
   img.src = source;
 }
@@ -325,6 +342,8 @@ Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
 Tessarray.prototype.scale = function(boxNode, scale) {
   var transformStyle = boxNode.style.transform;
   // If boxNode has a transform style already, change the scale but not the translation
+  // THIS NEEDS TO BE UPDATED
+  boxNode.style.transition = this.boxTransformOutTransition;
   if (transformStyle !== "") {
     boxNode.style.transform = transformStyle.replace(/(scale\()(\d)(\))/, ("$1" + scale.toString() + "$3"));
   } else {
@@ -335,8 +354,8 @@ Tessarray.prototype.scale = function(boxNode, scale) {
 // Add transition to boxes. This is called every render except for the initial render
 Tessarray.prototype.addTransitionToAllBoxNodes = function(callback) {
   for (var i = 0; i < this.boxNodes.length; i++) {
-    this.boxNodes[i].style.transition = this.transition;
-    this.boxNodes[i].style["-webkit-transition"] = this.transition;
+    this.boxNodes[i].style.transition = this.boxTransformTransition;
+    this.boxNodes[i].style["-webkit-transition"] = this.boxTransformTransition;
   }
 }
 
