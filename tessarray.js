@@ -2,6 +2,11 @@
 // Copyright 2016 Dixon and Moe
 // Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
 
+// Summary
+// Tessarray uses two classes: Tessarray and TessarrayBox
+// The Tessarray Object is what you create to instantiate Tessarray. The user creates a Tessarray object with the parameters
+// boxSelector, containerSelector, and options. The
+
 // ------ Flickr Justified Layout ------
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the MIT license.
@@ -10,12 +15,38 @@ require=function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requi
 
 // ------ Tessaray Initialization ------
 var Tessarray = function(boxSelector, containerSelector, options) {
-  // Set default values for options
+  this.container = document.querySelector(containerSelector);
+  this.boxSelector = boxSelector;
   this.options = options || {};
+  
+  this.initialize();
+
+  // If given selectorClass is given, bind sortByCategory to the click of each selector
+  if (this.options.selectorClass) {
+    this.selectors = document.getElementsByClassName(this.options.selectorClass);
+    for (var i = 0; i < this.selectors.length; i++) {
+      var category = this.selectors[i].getAttribute('data-category');
+      this.selectors[i].addEventListener("click", this.sortByCategory.bind(this, category));
+    }
+  }
+}
+
+Tessarray.prototype.initialize = function() {
+  // Set default values for options
   this.setOptionValue("selectorClass", false);
   this.setOptionValue("imageClass", false);
   this.setOptionValue("defaultCategory", false);
   this.setOptionValue("resize", true);
+  this.setOptionValue("boxLoadedClass", 'is-loaded');
+  this.setOptionValue("boxLoadedCallback", false);
+  this.setOptionValue("containerLoadedClass", 'container-is-loaded');
+  this.setOptionValue("containerLoadedCallback", false);
+  this.setOptionValue("initialBoxOpacity", 0);
+  this.setOptionValue("containerOpacityTransition", {
+    duration: 300,
+    timingFunction: "ease-in",
+    delay: 0
+  });
   this.setOptionValue("boxTransformTransition", {
     duration: 500,
     timingFunction: "ease-in",
@@ -26,30 +57,37 @@ var Tessarray = function(boxSelector, containerSelector, options) {
     timingFunction: "ease-in",
     delay: 0
   });
-  this.setOptionValue("boxOpacityTransition", {
-    duration: 375,
-    timingFunction: "ease-in",
-    delay: 0
-  });
-  this.setOptionValue("containerOpacityTransition", {
-    duration: 375,
-    timingFunction: "ease-in",
-    delay: 0
-  });
   this.setOptionValue("flickr", {});
 
-  // Set container
-  this.container = document.querySelector(containerSelector);
 
   // Instantiate variables to keep track of whether or not Tessarray needs to wait to load the image dimensions before rendering
   this.dimensionsLoaded = [];
   this.containerHasLoaded = false;
 
-  // Save transition data that is applied after the first render
-  this.boxOpacityTransition = "opacity " + this.options.boxOpacityTransition.duration + "ms " + this.options.boxOpacityTransition.timingFunction + " " + this.options.boxOpacityTransition.delay + "ms";
-  this.containerOpacityTransition = "opacity " + this.options.containerOpacityTransition.duration + "ms " + this.options.containerOpacityTransition.timingFunction + " " + this.options.containerOpacityTransition.delay + "ms";
-  this.boxTransformTransition = "transform " + this.options.boxTransformTransition.duration + "ms " + this.options.boxTransformTransition.timingFunction + " " + this.options.boxTransformTransition.delay + "ms, height " + this.options.boxTransformTransition.duration + "ms " + this.options.boxTransformTransition.timingFunction + " " + this.options.boxTransformTransition.delay + "ms, width " + this.options.boxTransformTransition.duration + "ms " + this.options.boxTransformTransition.timingFunction + " " + this.options.boxTransformTransition.delay + "ms, " + this.boxOpacityTransition;
-  this.boxTransformOutTransition = "transform " + this.options.boxTransformOutTransition.duration + "ms " + this.options.boxTransformOutTransition.timingFunction + " " + this.options.boxTransformOutTransition.delay + "ms";
+  // For each of the transitions, check the type. 
+  // If it is an object, use the keys of the object to set the transition
+  // If it is a string, set the transition directly
+
+  // containerOpacityTransition controls the transition from 0 opacity to 1 once the container is loaded.
+  if (typeof this.options.containerOpacityTransition === "object") {
+    this.containerOpacityTransition = "opacity " + this.options.containerOpacityTransition.duration + "ms " + this.options.containerOpacityTransition.timingFunction + " " + this.options.containerOpacityTransition.delay + "ms";
+  } else if (typeof this.options.containerOpacityTransition === "string") {
+    this.containerOpacityTransition = this.options.containerOpacityTransition;
+  }
+
+  // boxTransformTransition controls the movement of boxes, the resizing of boxes, and the scaling of boxes from 1 to 0.
+  if (typeof this.options.boxTransformTransition === "object") {
+    this.boxTransformTransition = "transform " + this.options.boxTransformTransition.duration + "ms " + this.options.boxTransformTransition.timingFunction + " " + this.options.boxTransformTransition.delay + "ms, height " + this.options.boxTransformTransition.duration + "ms " + this.options.boxTransformTransition.timingFunction + " " + this.options.boxTransformTransition.delay + "ms, width " + this.options.boxTransformTransition.duration + "ms " + this.options.boxTransformTransition.timingFunction + " " + this.options.boxTransformTransition.delay + "ms";
+  } else if (typeof this.options.boxTransformTransition === "string") {
+    this.boxTransformTransition = this.options.boxTransformTransition;
+  }
+
+  // boxTransformOutTransition controlls the scaling of boxes from 0 to 1. 
+  if (typeof this.options.boxTransformOutTransition === "object") {
+    this.boxTransformOutTransition = "transform " + this.options.boxTransformOutTransition.duration + "ms " + this.options.boxTransformOutTransition.timingFunction + " " + this.options.boxTransformOutTransition.delay + "ms";
+  } else if (typeof this.options.boxTransformOutTransition === "string") {
+    this.boxTransformOutTransition = this.options.boxTransformOutTransition;
+  }
 
   // Check if user specified containerWidth
   this.specifiedContainerWidth = !!this.options.flickr.containerWidth;
@@ -61,7 +99,7 @@ var Tessarray = function(boxSelector, containerSelector, options) {
   this.boxObjects = [];
 
   // Scope boxes to containerSelector
-  var boxes = this.container.querySelectorAll(boxSelector);
+  var boxes = this.container.querySelectorAll(this.boxSelector);
 
   // For each box node create a newBoxObject
   var invalidBoxNodeCount = 0;
@@ -69,12 +107,10 @@ var Tessarray = function(boxSelector, containerSelector, options) {
     var newBoxObject = new TessarrayBox(boxes[i], i, this);
 
     // Add this newBoxObject to this.boxObjects and the node to this.boxNodes if there is a valid image
-    if (newBoxObject.image) {
+    if (!newBoxObject.invalid) {
       this.boxObjects[i - invalidBoxNodeCount] = newBoxObject;
       this.boxNodes[i - invalidBoxNodeCount] = boxes[i];
       this.boxNodes[i - invalidBoxNodeCount].style.position = "absolute";
-      // this.boxNodes[i - invalidBoxNodeCount].style.transform = this.boxTransformTransition;
-
 
     // Else incremement counter to ensure there are not gaps in this.boxObjects or this.boxNodes arrays
     } else {
@@ -97,7 +133,6 @@ var Tessarray = function(boxSelector, containerSelector, options) {
   // Set containerOpacityTransition to container if containerOpacityTransition exists. User could set containerOpacityTransition
   // to false for no container transitions.
   if (this.options.containerOpacityTransition) {
-    // var containerOpacityTransition = "opacity " + this.options.containerOpacityTransition.duration + "ms " + this.options.containerOpacityTransition.timingFunction + " " + this.options.containerOpacityTransition.delay + "ms";
     this.container.style.transition = this.containerOpacityTransition;
     this.container.style["-webkit-transition"] = this.containerOpacityTransition;
   }
@@ -132,15 +167,6 @@ var Tessarray = function(boxSelector, containerSelector, options) {
 
   // Confirm that this.container has the correct data and is ready to render
   this.containerLoad();
-
-  // If given selectorClass is given, bind sortByCategory to the click of each selector
-  if (this.options.selectorClass) {
-    this.selectors = document.getElementsByClassName(this.options.selectorClass);
-    for (var i = 0; i < this.selectors.length; i++) {
-      var category = this.selectors[i].getAttribute('data-category');
-      this.selectors[i].addEventListener("click", this.sortByCategory.bind(this, category));
-    }
-  }
 }
 
 
@@ -164,31 +190,28 @@ var TessarrayBox = function(box, index, tessarray) {
   // If the box itself is an image, use the box.
   if (tessarray.options.imageClass) {
     this.image = box.getElementsByClassName(tessarray.options.imageClass)[0];
+  } else if (box.querySelector('img')) {
+    this.image = box.querySelector('img');
   } else if (box.tagName === "IMG") {
     this.image = box;
-  } else {
-    this.image = box.querySelector('img');
-  } 
-
-  // If the image doesn't exist, call confirm load so the initial render does not wait on this image, 
-  // and raise an error
-  if (!this.image) {
-    tessarray.confirmLoad(index);
-    throw "one of the your images does not exist"
   }
 
-  // Render the box invisible until it is loaded
-  box.style.opacity = "0";
-  box.style.transition = tessarray.boxOpacityTransition;
-  // this.image.style.transition = "opacity " + tessarray.options.boxTransition.duration + "ms " + "ease-in";
-
-  // If data attribute for aspect ratio is set or data attribute for height and width are set
+  // If data attribute for aspect ratio is set or data attribute for height and width are set, call setAspectRatio.
   if (box.getAttribute('data-aspect-ratio') || (box.getAttribute('data-height') && box.getAttribute('data-width'))) {
     this.givenAspectRatio = true;
     this.setAspectRatio(tessarray, box, index);
 
+  // If the image doesn't exist and it does not have height and width or aspect ratio, 
+  // call confirm load so the initial render does not wait on this image and raise an error.
+  } else if (!this.image || !this.image.getAttribute('src')) {
+    this.invalid = true; 
+    tessarray.confirmLoad(index);
+    console.log("one of your images does not exist");
+    // I don't want to break
+    // throw new Error("one of the your images does not exist")
+
   // Else, get aspect ratio by loading the image source into Javascript, then confirmLoad once
-  // the image has loaded
+  // the image has loaded.
   } else {
     this.givenAspectRatio = false;
     var source = this.image.getAttribute('src');
@@ -197,7 +220,10 @@ var TessarrayBox = function(box, index, tessarray) {
     img.onload = function() {
       thisBox.aspectRatio = this.width / this.height;
       tessarray.confirmLoad(index);
-      box.style.opacity = "1";
+      box.classList.add(tessarray.options.boxLoadedClass);
+      if (typeof tessarray.options.boxLoadedCallback === "function") {
+        tessarray.options.boxLoadedCallback(this);
+      }
     }
     img.src = source;
   }
@@ -221,8 +247,8 @@ Tessarray.prototype.setContainerWidth = function() {
 }
 
 // Set aspect ratio for TessarrayBox and then confirmLoad.
-// Also loads image in javascript to ensure that the image has loaded before setting
-// the opacity of the image to 1.
+// If TessarrayBox has an image, this loads image in javascript before setting 
+// the boxLoadedClass and triggering the boxLoadedCallback
 TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
   if (box.getAttribute('data-aspect-ratio')) {
     this.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
@@ -231,13 +257,25 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
     this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
     tessarray.confirmLoad(index);
   } 
-  var source = this.image.getAttribute('src');
-  var img = new Image();
-  var thisBoxObj = this;
-  img.onload = function() {
-    box.style.opacity = "1";
+  // If image exists, load it
+  if (this.image) {
+    var source = this.image.getAttribute('src');
+    var img = new Image();
+    var thisBoxObj = this;
+    img.onload = function() {
+      box.classList.add(tessarray.options.boxLoadedClass);
+      if (typeof tessarray.options.boxLoadedCallback === "function") {
+        tessarray.options.boxLoadedCallback(this);
+      }
+    }
+    img.src = source;
+  // Else trigger boxLoaded immediately.
+  } else {
+    box.classList.add(tessarray.options.boxLoadedClass);
+    if (typeof tessarray.options.boxLoadedCallback === "function") {
+      tessarray.options.boxLoadedCallback(this);
+    }
   }
-  img.src = source;
 }
 
 // Set index of dimensionsLoaded to be true. If every element in dimensionsLoaded is either
@@ -276,13 +314,17 @@ Tessarray.prototype.renderIfNecessary = function() {
 
 // Render the boxes for the first time
 Tessarray.prototype.initialRender = function() {
-  // Make the container opaque
+  // Make the container opaque, add containerLoaded class, and trigger containerLoadedCallback.
   this.container.style.opacity = "1";
+  this.container.classList.add(this.options.containerLoadedClass);
+  if (typeof this.options.containerLoadedCallback === "function") {
+    this.options.containerLoadedCallback();
+  }
 
-  // If selectors are being used and there is a defaultCategory, render that category
+  // If selectors are being used and there is a defaultCategory, render that category.
   if (this.options.selectorClass && this.options.defaultCategory) {
 
-    // Pass in true to indicate that this is handling the initial render
+    // Pass in true to indicate that this is handling the initial render.
     this.sortByCategory(this.options.defaultCategory, true);
 
   // Else, render every box
@@ -327,7 +369,7 @@ Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
 
   // Create new this.indexes.
   // this.indexes will be an array of indexes of boxes in the order that they are to be rendered.
-  // For example, if there were three boxes and they were to be showin in reverse order, this.indexes
+  // For example, if there were three boxes and they were to be shown in reverse order, this.indexes
   // would be [2,1,0]
   this.indexes = this.selectedBoxes.map(function(box) {
     return box.index;
@@ -396,12 +438,6 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
         boxNode.style.transform = "translate(" + box.left + "px, " + box.top + "px) scale(1)";
         boxNode.style.height = box.height + "px";
         boxNode.style.width = box.width + "px";
-
-        // If the box does not define an aspect ratio, the image will have loaded by the time this is called
-        // and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
-        if (!this.boxObjects[i].givenAspectRatio) {
-          this.boxObjects[i].image.style.opacity = "1";
-        }
       }
 
     // Else remove the boxNode from sight
