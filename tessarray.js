@@ -253,6 +253,7 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
     this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
     tessarray.confirmLoad(index);
   } 
+  
   // If image exists, load it
   if (this.image) {
     var source = this.image.getAttribute('src');
@@ -265,6 +266,7 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
       }
     }
     img.src = source;
+
   // Else trigger boxLoaded immediately.
   } else {
     box.classList.add(tessarray.options.boxLoadedClass);
@@ -417,27 +419,22 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
     this.addTransitionToAllBoxNodes();
   } 
 
-  console.log(layoutGeometry);
-
   // For each boxNode
   for (var i = 0; i < this.boxNodes.length; i++) {
     var boxNode = this.boxNodes[i];
 
-    lg = layoutGeometry
-    // console.log(this.indexes.includes(i));
     // If this box is to be rendered in the current filteration
     if (this.indexes.includes(i)) {
-      console.log(i);
       // Grab the appropriate box information from Flickr Justified layout
       var box = layoutGeometry.boxes[this.indexes.indexOf(i)];
-      console.log(box);
+
       // Apply Flickr data to the selected box unless box is undefined. Box can be undefined if it was not
       // filtered out, but is not rendered due to Flickr options (such as showWidows: false).
       if (box !== undefined) {
         boxNode.style.transform = "translate(" + box.left + "px, " + box.top + "px) scale(1)";
         boxNode.style.height = box.height + "px";
         boxNode.style.width = box.width + "px";
-        
+
       // If it is undefined, scale it down to 0
       } else {
         this.scale(boxNode, 0);
@@ -449,36 +446,3 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
     }
   } 
 }
-
-//   // For each boxNode
-//   for (var i = 0; i < this.boxNodes.length; i++) {
-//     var boxNode = this.boxNodes[i];
-//     // If this box is to be rendered in the current filteration
-//     if (this.indexes.includes(i)) {
-//       // Grab the appropriate box information from Flickr Justified layout
-//       var box = layoutGeometry.boxes[this.indexes.indexOf(i)];
-//       // If node is not supposed to be displayed, hide it. This means that it was not filtered out, but is 
-//       // not being rendered due to Flickr options (such as showWidows: false)
-//       if (box === undefined) {
-//         this.scale(boxNode, 0);
-//       // Else apply the Flickr data to selected
-//       } else {
-//         boxNode.style.transform = "translate(" + box.left + "px, " + box.top + "px) scale(1)";
-//         boxNode.style.height = box.height + "px";
-//         boxNode.style.width = box.width + "px";
-//         // If the box does not define an aspect ratio, the image will have loaded by the time this is called
-//         // and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
-//         if (!this.boxObjects[i].givenAspectRatio) {
-//           this.boxObjects[i].image.style.opacity = "";
-//         }
-//       }
-//     // Else if not rendered in current filtration, but was rendered in a previous filtration, remove the 
-//     // boxNode from sight
-//     } else if (this.oldIndexes.includes(i)) {
-//       this.scale(boxNode, 0);
-//     // Else if not in current or previous filtration (when a default category is selected), reduce scale to 0
-//     } else {    
-//       this.scale(boxNode, 0);
-//     }
-//   } 
-// }
