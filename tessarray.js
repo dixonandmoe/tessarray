@@ -22,6 +22,7 @@ var Tessarray = function(boxSelector, containerSelector, options) {
   this.initialize();
 
   // If given selectorClass is given, bind sortByCategory to the click of each selector
+  // Do not put in initialize function so multiple event listeners are not assigned
   if (this.options.selectorClass) {
     this.selectors = document.getElementsByClassName(this.options.selectorClass);
     for (var i = 0; i < this.selectors.length; i++) {
@@ -121,10 +122,8 @@ Tessarray.prototype.initialize = function() {
   // Set width that is passed to the Justified Layout to be the current width of the container
   this.setContainerWidth();
 
-  // Give container relative positioning if it has none
-  if (this.container.style.position === "") {
-    this.container.style.position = "relative";
-  }
+  // Give container relative positioning 
+  this.container.style.position = "relative";
 
   // Give container opacity of 0, this will be changed to 1 once a the first layout geometry is loaded
   // from Flickr's Justified Layout
@@ -134,7 +133,6 @@ Tessarray.prototype.initialize = function() {
   // to false for no container transitions.
   if (this.options.containerOpacityTransition) {
     this.container.style.transition = this.containerOpacityTransition;
-    this.container.style["-webkit-transition"] = this.containerOpacityTransition;
   }
 
   // If user specified containerPadding, use it to calculate height
@@ -206,9 +204,7 @@ var TessarrayBox = function(box, index, tessarray) {
   } else if (!this.image || !this.image.getAttribute('src')) {
     this.invalid = true; 
     tessarray.confirmLoad(index);
-    console.log("one of your images does not exist");
-    // I don't want to break
-    // throw new Error("one of the your images does not exist")
+    console.log("One of your images does not exist.");
 
   // Else, get aspect ratio by loading the image source into Javascript, then confirmLoad once
   // the image has loaded.
@@ -345,15 +341,15 @@ Tessarray.prototype.sortByCategory = function(category, initialRender) {
       return box.classes[category] !== undefined;
     });
 
-    var sortedBoxes = filteredBoxes.sort(function(box) {
-      return box.classes[category];
+    var sortedBoxes = filteredBoxes.sort(function(boxA, boxB) {
+      return parseInt(boxA.classes[category]) - parseInt(boxB.classes[category]);
     });
   }
 
   // Update sortedBoxes attribute and re-render the boxes.
-  // Can't pass in initialRender because event is inadvertently passed as a parameter,
-  // and it is truthy. Might be able to add event.preventDefault() earlier, but it might be
-  // overwriting wanted user functionality.
+  // Can't pass in initialRender because event is inadvertently passed as a parameter
+  // and it is truthy. Could add event.preventDefault() earlier, but it might overwrite
+  // other functionality implemented by the user.
   this.setSelectedBoxes(sortedBoxes);
   if (initialRender === true) {
     this.renderBoxes(true);
@@ -397,7 +393,6 @@ Tessarray.prototype.scale = function(boxNode, scale) {
 Tessarray.prototype.addTransitionToAllBoxNodes = function(callback) {
   for (var i = 0; i < this.boxNodes.length; i++) {
     this.boxNodes[i].style.transition = this.boxTransformTransition;
-    this.boxNodes[i].style["-webkit-transition"] = this.boxTransformTransition;
   }
 }
 
@@ -422,22 +417,30 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
     this.addTransitionToAllBoxNodes();
   } 
 
+  console.log(layoutGeometry);
+
   // For each boxNode
   for (var i = 0; i < this.boxNodes.length; i++) {
     var boxNode = this.boxNodes[i];
 
+    lg = layoutGeometry
+    // console.log(this.indexes.includes(i));
     // If this box is to be rendered in the current filteration
     if (this.indexes.includes(i)) {
-
+      console.log(i);
       // Grab the appropriate box information from Flickr Justified layout
       var box = layoutGeometry.boxes[this.indexes.indexOf(i)];
-
+      console.log(box);
       // Apply Flickr data to the selected box unless box is undefined. Box can be undefined if it was not
       // filtered out, but is not rendered due to Flickr options (such as showWidows: false).
       if (box !== undefined) {
         boxNode.style.transform = "translate(" + box.left + "px, " + box.top + "px) scale(1)";
         boxNode.style.height = box.height + "px";
         boxNode.style.width = box.width + "px";
+        
+      // If it is undefined, scale it down to 0
+      } else {
+        this.scale(boxNode, 0);
       }
 
     // Else remove the boxNode from sight
@@ -446,3 +449,36 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
     }
   } 
 }
+
+//   // For each boxNode
+//   for (var i = 0; i < this.boxNodes.length; i++) {
+//     var boxNode = this.boxNodes[i];
+//     // If this box is to be rendered in the current filteration
+//     if (this.indexes.includes(i)) {
+//       // Grab the appropriate box information from Flickr Justified layout
+//       var box = layoutGeometry.boxes[this.indexes.indexOf(i)];
+//       // If node is not supposed to be displayed, hide it. This means that it was not filtered out, but is 
+//       // not being rendered due to Flickr options (such as showWidows: false)
+//       if (box === undefined) {
+//         this.scale(boxNode, 0);
+//       // Else apply the Flickr data to selected
+//       } else {
+//         boxNode.style.transform = "translate(" + box.left + "px, " + box.top + "px) scale(1)";
+//         boxNode.style.height = box.height + "px";
+//         boxNode.style.width = box.width + "px";
+//         // If the box does not define an aspect ratio, the image will have loaded by the time this is called
+//         // and is ready to be made visible. Otherwise opacity = 1 will wait until image has loaded.
+//         if (!this.boxObjects[i].givenAspectRatio) {
+//           this.boxObjects[i].image.style.opacity = "";
+//         }
+//       }
+//     // Else if not rendered in current filtration, but was rendered in a previous filtration, remove the 
+//     // boxNode from sight
+//     } else if (this.oldIndexes.includes(i)) {
+//       this.scale(boxNode, 0);
+//     // Else if not in current or previous filtration (when a default category is selected), reduce scale to 0
+//     } else {    
+//       this.scale(boxNode, 0);
+//     }
+//   } 
+// }

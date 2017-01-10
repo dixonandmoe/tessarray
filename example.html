@@ -259,6 +259,7 @@
     /* Use this if images are appearing before rendering correctly */
     .container {
       opacity: 0;
+      position: relative;
     }
 
     /* Use this to specify default container height before images load */
@@ -275,17 +276,17 @@
     }
 
     .image {
-      /*opacity: 0;*/
       height: 100%;
       width: 100%;
-      /*transition: opacity 375ms ease-in;*/
+      opacity: 0;
+      transition: opacity 375ms ease-in;
     }
 
-/*    .is-loaded .image {
+    .is-loaded .image {
       opacity: 1;
     }
 
-    .is-loaded.image {
+/*    .is-loaded.image {
       opacity: 1;
     }*/
 
@@ -313,6 +314,7 @@
         flickr: {
           targetRowHeight: 300,
           targetRowHeightTolerance: 0.25,
+          showWidows: false,
           // containerPadding: 0,
           // containerPadding: {
           //   top: 10,
