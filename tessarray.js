@@ -28,7 +28,7 @@ var Tessarray = function(boxSelector, containerSelector, options) {
   this.setOptionValue("containerLoadedClass", 'container-is-loaded');
   this.setOptionValue("containerLoadedCallback", false);
   this.setOptionValue("initialBoxOpacity", 0);
-  this.setOptionValue("containerOpacityTransition", {
+  this.setOptionValue("containerTransition", {
     duration: 300,
     timingFunction: "ease-in",
     delay: 0
@@ -54,11 +54,11 @@ var Tessarray = function(boxSelector, containerSelector, options) {
   // If it is an object, use the keys of the object to set the transition
   // If it is a string, set the transition directly
 
-  // containerOpacityTransition controls the transition from 0 opacity to 1 once the container is loaded.
-  if (typeof this.options.containerOpacityTransition === "object") {
-    this.containerOpacityTransition = "opacity " + this.options.containerOpacityTransition.duration + "ms " + this.options.containerOpacityTransition.timingFunction + " " + this.options.containerOpacityTransition.delay + "ms";
-  } else if (typeof this.options.containerOpacityTransition === "string") {
-    this.containerOpacityTransition = this.options.containerOpacityTransition;
+  // containerTransition controls the transition from 0 opacity to 1 once the container is loaded.
+  if (typeof this.options.containerTransition === "object") {
+    this.containerTransition = "opacity " + this.options.containerTransition.duration + "ms " + this.options.containerTransition.timingFunction + " " + this.options.containerTransition.delay + "ms";
+  } else if (typeof this.options.containerTransition === "string") {
+    this.containerTransition = this.options.containerTransition;
   }
 
   // boxTransformTransition controls the movement of boxes, the resizing of boxes, and the scaling of boxes from 1 to 0.
@@ -114,10 +114,10 @@ var Tessarray = function(boxSelector, containerSelector, options) {
   // from Flickr's Justified Layout
   this.container.style.opacity = "0"; 
 
-  // Set containerOpacityTransition to container if containerOpacityTransition exists. User could set containerOpacityTransition
+  // Set containerTransition to container if containerTransition exists. User could set containerTransition
   // to false for no container transitions.
-  if (this.options.containerOpacityTransition) {
-    this.container.style.transition = this.containerOpacityTransition;
+  if (this.options.containerTransition) {
+    this.container.style.transition = this.containerTransition;
   }
 
   // If user specified containerPadding, use it to calculate height
@@ -453,19 +453,25 @@ Tessarray.prototype.destroy = function() {
   if (this.eventListeners["window"]) {
     window.removeEventListener('resize', this.eventListeners["window"]);
   }
+
+  this.container.style.transition = "";
+  // this.container.style.opacity = "";
+  // this.container.style.position = "";
+  // this.container.classList.remove(this.containerLoadedClass);
+
   for (i = 0; i < this.boxNodes.length; i++) {
-    // this.boxNodes[i].style.position = "";
     this.boxNodes[i].style.transition = "";
+    // this.boxNodes[i].style.position = "";
+    // this.classList.remove(this.boxLoadedClass);
   }
+  
   for (j = 0; j < this.selectors.length; j++) {
     this.selectors[j].removeEventListener('click', this.eventListeners[j]);
   }
+
   this.boxObjects = null;
   delete this.boxObjects;
   this.eventListeners = null;
   delete this.eventListeners;
-  // this.container.style.opacity = "";
-  // this.container.style.position = "";
-  this.container.style.transition = "";
   delete this;
 }
