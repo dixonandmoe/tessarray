@@ -2,11 +2,6 @@
 // Copyright 2016 Dixon and Moe
 // Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
 
-// Summary
-// Tessarray uses two classes: Tessarray and TessarrayBox
-// The Tessarray Object is what you create to instantiate Tessarray. The user creates a Tessarray object with the parameters
-// boxSelector, containerSelector, and options. The
-
 // ------ Flickr Justified Layout ------
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the MIT license.
@@ -18,21 +13,11 @@ var Tessarray = function(boxSelector, containerSelector, options) {
   this.container = document.querySelector(containerSelector);
   this.boxSelector = boxSelector;
   this.options = options || {};
+
+  // The eventListeners object is used to record what functions have been added to which
+  // elements so they can be removed in the destroy method.
+  this.eventListeners = {}
   
-  this.initialize();
-
-  // If given selectorClass is given, bind sortByCategory to the click of each selector
-  // Do not put in initialize function so multiple event listeners are not assigned
-  if (this.options.selectorClass) {
-    this.selectors = document.getElementsByClassName(this.options.selectorClass);
-    for (var i = 0; i < this.selectors.length; i++) {
-      var category = this.selectors[i].getAttribute('data-category');
-      this.selectors[i].addEventListener("click", this.sortByCategory.bind(this, category));
-    }
-  }
-}
-
-Tessarray.prototype.initialize = function() {
   // Set default values for options
   this.setOptionValue("selectorClass", false);
   this.setOptionValue("imageClass", false);
@@ -160,12 +145,25 @@ Tessarray.prototype.initialize = function() {
   // If this.options.resize, resize the container upon window size change if 
   // container size is modified
   if (this.options.resize) {
-    window.addEventListener("resize", this.renderIfNecessary.bind(this))
+    this.eventListeners["window"] = this.renderIfNecessary.bind(this);
+    window.addEventListener("resize", this.eventListeners["window"])
   }
 
   // Confirm that this.container has the correct data and is ready to render
   this.containerLoad();
+
+  // If given selectorClass is given, bind sortByCategory to the click of each selector
+  // Do not put in initialize function so multiple event listeners are not assigned
+  if (this.options.selectorClass) {
+    this.selectors = document.getElementsByClassName(this.options.selectorClass);
+    for (var i = 0; i < this.selectors.length; i++) {
+      var category = this.selectors[i].getAttribute('data-category');
+      this.eventListeners[i] = this.sortByCategory.bind(this, category);
+      this.selectors[i].addEventListener("click", this.eventListeners[i]);
+    }
+  }
 }
+
 
 
 // ------ TessarrayBox Initialization ------
@@ -253,7 +251,7 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
     this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
     tessarray.confirmLoad(index);
   } 
-  
+
   // If image exists, load it
   if (this.image) {
     var source = this.image.getAttribute('src');
@@ -312,6 +310,7 @@ Tessarray.prototype.renderIfNecessary = function() {
 
 // Render the boxes for the first time
 Tessarray.prototype.initialRender = function() {
+
   // Make the container opaque, add containerLoaded class, and trigger containerLoadedCallback.
   this.container.style.opacity = "1";
   this.container.classList.add(this.options.containerLoadedClass);
@@ -381,8 +380,8 @@ Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
 // Helper method to change the scale of boxNodes without overwriting their translated position
 Tessarray.prototype.scale = function(boxNode, scale) {
   var transformStyle = boxNode.style.transform;
+
   // If boxNode has a transform style already, change the scale but not the translation
-  // THIS NEEDS TO BE UPDATED
   boxNode.style.transition = this.boxTransformOutTransition;
   if (transformStyle !== "") {
     boxNode.style.transform = transformStyle.replace(/(scale\()(\d)(\))/, ("$1" + scale.toString() + "$3"));
@@ -421,28 +420,52 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
 
   // For each boxNode
   for (var i = 0; i < this.boxNodes.length; i++) {
-    var boxNode = this.boxNodes[i];
 
     // If this box is to be rendered in the current filteration
     if (this.indexes.includes(i)) {
+
       // Grab the appropriate box information from Flickr Justified layout
       var box = layoutGeometry.boxes[this.indexes.indexOf(i)];
 
       // Apply Flickr data to the selected box unless box is undefined. Box can be undefined if it was not
       // filtered out, but is not rendered due to Flickr options (such as showWidows: false).
       if (box !== undefined) {
-        boxNode.style.transform = "translate(" + box.left + "px, " + box.top + "px) scale(1)";
-        boxNode.style.height = box.height + "px";
-        boxNode.style.width = box.width + "px";
+        this.boxNodes[i].style.transform = "translate(" + box.left + "px, " + box.top + "px) scale(1)";
+        this.boxNodes[i].style.height = box.height + "px";
+        this.boxNodes[i].style.width = box.width + "px";
 
       // If it is undefined, scale it down to 0
       } else {
-        this.scale(boxNode, 0);
+        this.scale(this.boxNodes[i], 0);
       }
 
     // Else remove the boxNode from sight
     } else {
-      this.scale(boxNode, 0);
+      this.scale(this.boxNodes[i], 0);
     }
   } 
+}
+
+// Destroy method for Tessarray.
+// Remove event listeners on selectors and window, remove transition from container and boxNodes.
+// Remove pointers to boxObjects. Leaving position and such so the display does not change.
+Tessarray.prototype.destroy = function() {
+  if (this.eventListeners["window"]) {
+    window.removeEventListener('resize', this.eventListeners["window"]);
+  }
+  for (i = 0; i < this.boxNodes.length; i++) {
+    // this.boxNodes[i].style.position = "";
+    this.boxNodes[i].style.transition = "";
+  }
+  for (j = 0; j < this.selectors.length; j++) {
+    this.selectors[j].removeEventListener('click', this.eventListeners[j]);
+  }
+  this.boxObjects = null;
+  delete this.boxObjects;
+  this.eventListeners = null;
+  delete this.eventListeners;
+  // this.container.style.opacity = "";
+  // this.container.style.position = "";
+  this.container.style.transition = "";
+  delete this;
 }
