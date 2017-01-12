@@ -200,7 +200,7 @@
         <!-- <img class="image" src="https://source.unsplash.com/category/people/1080x1600"/> -->
       </div>
       <!-- data-height="720" data-width="1080" data-aspect-ratio="0.66666666666" -->
-      <div class="box reverse nature" data-reverse="9" data-aspect-ratio="0.66666666666">
+      <div class="box reverse nature" data-reverse="9">
         <img class="image" src="https://source.unsplash.com/category/nature/720x1080"/>
       </div>
       <!-- data-height="900" data-width="900" data-aspect-ratio="1" --> 
@@ -259,14 +259,15 @@
     /* Use this if images are appearing before rendering correctly */
     .container {
       /*opacity: 0;*/
-      position: absolute;
-      max-height: 600px;
+      /*position: absolute;*/
+      height: 0px;
+      /*width: 800px;*/
     }
 
     .container.container-is-loaded {
       /*opacity: 0;*/
       /*position: absolute;*/
-      max-height: 1000px;
+      /*min-height: 400px;*/
     }
 
     /* Use this to specify default container height before images load */
@@ -307,18 +308,20 @@
 
         // Comment-in lines to see how options effect the render
         // imageClass: "imageClass",
-        // defaultCategory: "people",
-        containerTransition: "max-height 350ms ease-in, opacity 350ms ease-in",
+        defaultCategory: "people",
+        containerTransition: "height 800ms ease-in, opacity 350ms ease-in",
         // boxTransition: {
-        //   duration: 650,
-        //   timingFunction: "cubic-bezier(0.215, 0.61, 0.355, 1)",
-        //   delay: 50,
+          // duration: 350,
+          // timingFunction: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+          // timingFunction: "cubic-bezier(0.320, 1.385, 0.730, -0.470)",
+          // delay: 0,
         // },
         // isLoaded: function(box) {
         //   // box.style.opacity = 1;
         //   console.log(box);
         // }
         flickr: {
+          // containerWidth: 900,
           targetRowHeight: 300,
           targetRowHeightTolerance: 0.25,
           // showWidows: false,

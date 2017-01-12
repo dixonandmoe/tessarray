@@ -21,17 +21,20 @@ Link directly to Flickity files on [unpkg](https://unpkg.com).
 Bower: `bower install flickity --save`
 npm: `npm install flickity --save`
 
-## Usage
+## Getting Started
 
-Tessarray works with container and a set of boxes that contain images.
+Tessarray works with container and a set of boxes. If the boxes contain images, Tessarray
+can calculate the dimensions of the box, otherwise dimensions need to be passed in.
 
 ```html
-<div class="container">
+<div id="container">
   <div class="box">
     <img style="height: 100%; width: 100%;" src="#" />
   </div>
-  <div class="box">
-    <img style="height: 100%; width: 100%;" src="#" />
+  <div class="box" data-aspect-ratio="1.333">
+    <sgv>...</svg>
+  </div>
+  <div class="box" data-height="900" data-width="1600" style="background-color: red;">
   </div>
 </div>
 ```
@@ -39,7 +42,7 @@ Tessarray works with container and a set of boxes that contain images.
 ### Options
 
 ``` js
-var tessarray = new Tessarray('box', 'container', {
+var tessarray = new Tessarray('.box', '#container', {
   // Options, defaults listed
 
   selectorClass: false,
@@ -63,23 +66,43 @@ var tessarray = new Tessarray('box', 'container', {
   resize: true,
   // Allows the resizing of the window to trigger a re-rendering of the boxes 
   // if containerClass is given and the container is not statically sized
-
-  boxTransition: {
-    timingFunction: 'ease-in',
-    duration: 375,
-    delay: 0,
-  },
-  // Options for box transitions. This transition data is used when boxes are
-  // faded in (upon load), resized, moved, and scaled in and out.
-
+  
   containerTransition: {
     duration: 375,
     timingFunction: 'ease-in',
     delay: 0
   },
-  // Options for container transition. Used once when initial dimensions for 
-  // each box are loaded. 
+  // Options for the container's opacity transition. Used to fade in container
+  // once its dimensions have loaded
 
+  boxTransition: {
+    duration: 375,
+    timingFunction: 'ease-in',
+    delay: 0,
+  },
+  // Options for box transitions. This transition data is used when boxes are
+  // faded in (upon load), resized, moved, and scaled in and out.
+  
+  boxTransformOutTransition: {
+    duration: 250,
+    timingFunction: "ease-in",
+    delay: 0
+  },
+  // Options for the transition out for boxes. This transition data is used when boxes
+  // are scaled out. 
+  
+  containerLoadedClass: 'container-is-loaded',
+  // Determines what class is added to the container once its dimensions have loaded
+  
+  boxLoadedClass: 'is-loaded',
+  // Determines what class is added to a box once its contents have loaded
+
+  containerLoadedCallback: false,
+  // Callback that is called when container has loaded
+  
+  boxLoadedCallback: false,
+  // Callback that is called every time a box is loaded
+  
   flickr: {}
   // Pass in your Justified Layout options that differ from the defaults
 });

@@ -23,17 +23,12 @@ var Tessarray = function(boxSelector, containerSelector, options) {
   this.setOptionValue("imageClass", false);
   this.setOptionValue("defaultCategory", false);
   this.setOptionValue("resize", true);
-  this.setOptionValue("boxLoadedClass", 'is-loaded');
-  this.setOptionValue("boxLoadedCallback", false);
-  this.setOptionValue("containerLoadedClass", 'container-is-loaded');
-  this.setOptionValue("containerLoadedCallback", false);
-  this.setOptionValue("initialBoxOpacity", 0);
   this.setOptionValue("containerTransition", {
     duration: 300,
     timingFunction: "ease-in",
     delay: 0
   });
-  this.setOptionValue("boxTransformTransition", {
+  this.setOptionValue("boxTransition", {
     duration: 500,
     timingFunction: "ease-in",
     delay: 0
@@ -43,6 +38,10 @@ var Tessarray = function(boxSelector, containerSelector, options) {
     timingFunction: "ease-in",
     delay: 0
   });
+  this.setOptionValue("containerLoadedClass", 'container-is-loaded');
+  this.setOptionValue("boxLoadedClass", 'is-loaded');
+  this.setOptionValue("containerLoadedCallback", false);
+  this.setOptionValue("boxLoadedCallback", false);
   this.setOptionValue("flickr", {});
 
 
@@ -61,11 +60,11 @@ var Tessarray = function(boxSelector, containerSelector, options) {
     this.containerTransition = this.options.containerTransition;
   }
 
-  // boxTransformTransition controls the movement of boxes, the resizing of boxes, and the scaling of boxes from 1 to 0.
-  if (typeof this.options.boxTransformTransition === "object") {
-    this.boxTransformTransition = "transform " + this.options.boxTransformTransition.duration + "ms " + this.options.boxTransformTransition.timingFunction + " " + this.options.boxTransformTransition.delay + "ms, height " + this.options.boxTransformTransition.duration + "ms " + this.options.boxTransformTransition.timingFunction + " " + this.options.boxTransformTransition.delay + "ms, width " + this.options.boxTransformTransition.duration + "ms " + this.options.boxTransformTransition.timingFunction + " " + this.options.boxTransformTransition.delay + "ms";
-  } else if (typeof this.options.boxTransformTransition === "string") {
-    this.boxTransformTransition = this.options.boxTransformTransition;
+  // boxTransition controls the movement of boxes, the resizing of boxes, and the scaling of boxes from 1 to 0.
+  if (typeof this.options.boxTransition === "object") {
+    this.boxTransition = "transform " + this.options.boxTransition.duration + "ms " + this.options.boxTransition.timingFunction + " " + this.options.boxTransition.delay + "ms, height " + this.options.boxTransition.duration + "ms " + this.options.boxTransition.timingFunction + " " + this.options.boxTransition.delay + "ms, width " + this.options.boxTransition.duration + "ms " + this.options.boxTransition.timingFunction + " " + this.options.boxTransition.delay + "ms";
+  } else if (typeof this.options.boxTransition === "string") {
+    this.boxTransition = this.options.boxTransition;
   }
 
   // boxTransformOutTransition controlls the scaling of boxes from 0 to 1. 
@@ -393,7 +392,7 @@ Tessarray.prototype.scale = function(boxNode, scale) {
 // Add transition to boxes. This is called every render except for the initial render
 Tessarray.prototype.addTransitionToAllBoxNodes = function(callback) {
   for (var i = 0; i < this.boxNodes.length; i++) {
-    this.boxNodes[i].style.transition = this.boxTransformTransition;
+    this.boxNodes[i].style.transition = this.boxTransition;
   }
 }
 
