@@ -350,6 +350,7 @@ Tessarray.prototype.initialRender = function() {
 
 // Filter boxes by class, and then sort them by data-attribute values for that class
 Tessarray.prototype.sortByCategory = function(category, initialRender) {
+  console.time('IndexSort')
   if (category === "") {
     var sortedBoxes = this.boxObjects;
   } else {
@@ -414,7 +415,6 @@ Tessarray.prototype.addTransitionToAllBoxNodes = function() {
 
 // Render the boxes with the correct coordinates
 Tessarray.prototype.renderBoxes = function(initialRender) {
-  console.time('renderBoxes')
   this.setContainerWidth();
 
   // Get coordinates from Flickr Justified Layout
@@ -460,7 +460,7 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
       this.scale(this.boxNodes[i], 0);
     }
   } 
-  console.time('renderBoxes')
+  console.timeEnd('IndexSort')
 }
 
 // Destroy method for Tessarray.
