@@ -23,7 +23,7 @@ npm: `npm install flickity --save`
 
 ## Getting Started
 
-Tessarray works with container and a set of boxes. If the boxes contain images, Tessarray
+Tessarray works with a container and a set of boxes. If the boxes contain images, Tessarray
 can calculate the dimensions of the box, otherwise dimensions need to be passed in.
 
 ```html

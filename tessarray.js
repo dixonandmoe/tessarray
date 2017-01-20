@@ -17,6 +17,17 @@ var Tessarray = function(boxSelector, containerSelector, options) {
   // The eventListeners object is used to record what functions have been added to which
   // elements so they can be removed in the destroy method.
   this.eventListeners = {}
+
+  this.eventListeners['container'] = function(event) {
+    if (event.target === this.container) {
+      this.addTransitionToAllBoxNodes();
+      this.container.removeEventListener('transitionend', this.eventListeners['container']);
+    }
+  }.bind(this);
+
+  if ((this.options.containerTransition !== false) && (typeof this.options.containerTransition !== "object" || this.options.containerTransition.duration !== 0)) {
+    this.container.addEventListener('transitionend', this.eventListeners['container']);
+  }
   
   // Set default values for options
   this.setOptionValue("selectorClass", false);
@@ -116,7 +127,9 @@ var Tessarray = function(boxSelector, containerSelector, options) {
   // Set containerTransition to container if containerTransition exists. User could set containerTransition
   // to false for no container transitions.
   if (this.options.containerTransition) {
-    this.container.style.transition = this.containerTransition;
+    setTimeout(function() {
+      this.container.style.transition = this.containerTransition;
+    }.bind(this), 0)
   }
 
   // If user specified containerPadding, use it to calculate height
@@ -170,6 +183,7 @@ var Tessarray = function(boxSelector, containerSelector, options) {
 var TessarrayBox = function(box, index, tessarray) {
   this.index = index;
   this.classes = {};
+  this.boxNode = box;
 
   // Indicate to the tessarray object that the current image has not yet loaded
   tessarray.dimensionsLoaded[index] = false; 
@@ -194,7 +208,7 @@ var TessarrayBox = function(box, index, tessarray) {
   // If data attribute for aspect ratio is set or data attribute for height and width are set, call setAspectRatio.
   if (box.getAttribute('data-aspect-ratio') || (box.getAttribute('data-height') && box.getAttribute('data-width'))) {
     this.givenAspectRatio = true;
-    this.setAspectRatio(tessarray, box, index);
+    this.setAspectRatio(tessarray, index);
 
   // If the image doesn't exist and it does not have height and width or aspect ratio, 
   // call confirm load so the initial render does not wait on this image and raise an error.
@@ -209,13 +223,13 @@ var TessarrayBox = function(box, index, tessarray) {
     this.givenAspectRatio = false;
     var source = this.image.getAttribute('src');
     var img = new Image();
-    var thisBox = this;
+    var thisBoxObj = this;
     img.onload = function() {
-      thisBox.aspectRatio = this.width / this.height;
+      thisBoxObj.aspectRatio = this.width / this.height;
       tessarray.confirmLoad(index);
       box.classList.add(tessarray.options.boxLoadedClass);
       if (typeof tessarray.options.boxLoadedCallback === "function") {
-        tessarray.options.boxLoadedCallback(this);
+        tessarray.options.boxLoadedCallback(thisBoxObj);
       }
     }
     img.src = source;
@@ -242,12 +256,12 @@ Tessarray.prototype.setContainerWidth = function() {
 // Set aspect ratio for TessarrayBox and then confirmLoad.
 // If TessarrayBox has an image, this loads image in javascript before setting 
 // the boxLoadedClass and triggering the boxLoadedCallback
-TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
-  if (box.getAttribute('data-aspect-ratio')) {
-    this.aspectRatio = parseFloat(box.getAttribute('data-aspect-ratio'));
+TessarrayBox.prototype.setAspectRatio = function(tessarray, index) {
+  if (this.boxNode.getAttribute('data-aspect-ratio')) {
+    this.aspectRatio = parseFloat(this.boxNode.getAttribute('data-aspect-ratio'));
     tessarray.confirmLoad(index);
-  } else if (box.getAttribute('data-height') && box.getAttribute('data-width')) {
-    this.aspectRatio = parseFloat(box.getAttribute('data-height')) / parseFloat(box.getAttribute('data-width'));
+  } else if (this.boxNode.getAttribute('data-height') && this.boxNode.getAttribute('data-width')) {
+    this.aspectRatio = parseFloat(this.boxNode.getAttribute('data-height')) / parseFloat(this.boxNode.getAttribute('data-width'));
     tessarray.confirmLoad(index);
   } 
 
@@ -257,16 +271,16 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, box, index) {
     var img = new Image();
     var thisBoxObj = this;
     img.onload = function() {
-      box.classList.add(tessarray.options.boxLoadedClass);
+      thisBoxObj.boxNode.classList.add(tessarray.options.boxLoadedClass);
       if (typeof tessarray.options.boxLoadedCallback === "function") {
-        tessarray.options.boxLoadedCallback(this);
+        tessarray.options.boxLoadedCallback(thisBoxObj);
       }
     }
     img.src = source;
 
   // Else trigger boxLoaded immediately.
   } else {
-    box.classList.add(tessarray.options.boxLoadedClass);
+    this.boxNode.classList.add(tessarray.options.boxLoadedClass);
     if (typeof tessarray.options.boxLoadedCallback === "function") {
       tessarray.options.boxLoadedCallback(this);
     }
@@ -311,10 +325,12 @@ Tessarray.prototype.renderIfNecessary = function() {
 Tessarray.prototype.initialRender = function() {
 
   // Make the container opaque, add containerLoaded class, and trigger containerLoadedCallback.
-  this.container.style.opacity = "1";
+  setTimeout(function() {
+    this.container.style.opacity = "1";
+  }.bind(this), 0)
   this.container.classList.add(this.options.containerLoadedClass);
   if (typeof this.options.containerLoadedCallback === "function") {
-    this.options.containerLoadedCallback();
+    this.options.containerLoadedCallback(this);
   }
 
   // If selectors are being used and there is a defaultCategory, render that category.
@@ -390,7 +406,7 @@ Tessarray.prototype.scale = function(boxNode, scale) {
 }
 
 // Add transition to boxes. This is called every render except for the initial render
-Tessarray.prototype.addTransitionToAllBoxNodes = function(callback) {
+Tessarray.prototype.addTransitionToAllBoxNodes = function() {
   for (var i = 0; i < this.boxNodes.length; i++) {
     this.boxNodes[i].style.transition = this.boxTransition;
   }
@@ -398,6 +414,7 @@ Tessarray.prototype.addTransitionToAllBoxNodes = function(callback) {
 
 // Render the boxes with the correct coordinates
 Tessarray.prototype.renderBoxes = function(initialRender) {
+  console.time('renderBoxes')
   this.setContainerWidth();
 
   // Get coordinates from Flickr Justified Layout
@@ -443,6 +460,7 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
       this.scale(this.boxNodes[i], 0);
     }
   } 
+  console.time('renderBoxes')
 }
 
 // Destroy method for Tessarray.
