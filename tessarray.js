@@ -178,7 +178,6 @@ var Tessarray = function(boxSelector, containerSelector, options) {
 }
 
 
-
 // ------ TessarrayBox Initialization ------
 // Create JavaScript Object that represents a html element
 var TessarrayBox = function(box, index, tessarray) {
@@ -363,35 +362,15 @@ Tessarray.prototype.sortByCategory = function(category, initialRender) {
     });
   }
 
-  // Update sortedBoxes attribute and re-render the boxes.
   // Can't pass in initialRender because event is inadvertently passed as a parameter
   // and it is truthy. Could add event.preventDefault() earlier, but it might overwrite
   // other functionality implemented by the user.
-  // this.setSelectedBoxes(sortedBoxes);
   if (initialRender === true) {
     this.renderBoxes(true);
   } else {
     this.renderBoxes();
   }
 }
-
-// Grab the necessary information of the selectedBoxes (ratio and index),
-// while maintaining the selectedBoxes attribute for readability
-// Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
-//   this.selectedBoxes = sortedBoxes;
-
-//   // Create new this.indexes.
-//   // this.indexes will be an array of indexes of boxes in the order that they are to be rendered.
-//   // For example, if there were three boxes and they were to be shown in reverse order, this.indexes
-//   // would be [2,1,0]
-//   this.indexes = this.selectedBoxes.map(function(box) {
-//     return box.index;
-//   });
-
-//   this.ratios = sortedBoxes.map(function(box) {
-//     return parseFloat(box.aspectRatio);
-//   });
-// }
 
 // Helper method to change the scale of boxNodes without overwriting their translated position
 Tessarray.prototype.scale = function(boxNode, scale) {
@@ -417,7 +396,7 @@ Tessarray.prototype.addTransitionToAllBoxNodes = function() {
 Tessarray.prototype.renderBoxes = function(initialRender) {
   this.setContainerWidth();
 
-  // Get coordinates from Flickr Justified Layout
+  // Get coordinates from Flickr Justified Layout using an array of the aspect ratios of the selectedBoxes. 
   var layoutGeometry = require('justified-layout')(this.selectedBoxes.map(function(box) { return box.aspectRatio }), this.options.flickr);
 
   // Give container appropriate height for the images it contains.
