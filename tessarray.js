@@ -350,6 +350,7 @@ Tessarray.prototype.initialRender = function() {
 
 // Filter boxes by class, and then sort them by data-attribute values for that class
 Tessarray.prototype.sortByCategory = function(category, initialRender) {
+  console.time('sortAndRenderBoxes')
   if (category === "") {
     var sortedBoxes = this.boxObjects;
   } else {
@@ -357,7 +358,7 @@ Tessarray.prototype.sortByCategory = function(category, initialRender) {
       return box.classes[category] !== undefined;
     });
 
-    var sortedBoxes = filteredBoxes.sort(function(boxA, boxB) {
+    this.selectedBoxes = filteredBoxes.sort(function(boxA, boxB) {
       return parseInt(boxA.classes[category]) - parseInt(boxB.classes[category]);
     });
   }
@@ -366,7 +367,7 @@ Tessarray.prototype.sortByCategory = function(category, initialRender) {
   // Can't pass in initialRender because event is inadvertently passed as a parameter
   // and it is truthy. Could add event.preventDefault() earlier, but it might overwrite
   // other functionality implemented by the user.
-  this.setSelectedBoxes(sortedBoxes);
+  // this.setSelectedBoxes(sortedBoxes);
   if (initialRender === true) {
     this.renderBoxes(true);
   } else {
@@ -376,21 +377,21 @@ Tessarray.prototype.sortByCategory = function(category, initialRender) {
 
 // Grab the necessary information of the selectedBoxes (ratio and index),
 // while maintaining the selectedBoxes attribute for readability
-Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
-  this.selectedBoxes = sortedBoxes;
+// Tessarray.prototype.setSelectedBoxes = function(sortedBoxes) {
+//   this.selectedBoxes = sortedBoxes;
 
-  // Create new this.indexes.
-  // this.indexes will be an array of indexes of boxes in the order that they are to be rendered.
-  // For example, if there were three boxes and they were to be shown in reverse order, this.indexes
-  // would be [2,1,0]
-  this.indexes = this.selectedBoxes.map(function(box) {
-    return box.index;
-  });
+//   // Create new this.indexes.
+//   // this.indexes will be an array of indexes of boxes in the order that they are to be rendered.
+//   // For example, if there were three boxes and they were to be shown in reverse order, this.indexes
+//   // would be [2,1,0]
+//   this.indexes = this.selectedBoxes.map(function(box) {
+//     return box.index;
+//   });
 
-  this.ratios = sortedBoxes.map(function(box) {
-    return parseFloat(box.aspectRatio);
-  });
-}
+//   this.ratios = sortedBoxes.map(function(box) {
+//     return parseFloat(box.aspectRatio);
+//   });
+// }
 
 // Helper method to change the scale of boxNodes without overwriting their translated position
 Tessarray.prototype.scale = function(boxNode, scale) {
@@ -414,11 +415,10 @@ Tessarray.prototype.addTransitionToAllBoxNodes = function() {
 
 // Render the boxes with the correct coordinates
 Tessarray.prototype.renderBoxes = function(initialRender) {
-  console.time('renderBoxes')
   this.setContainerWidth();
 
   // Get coordinates from Flickr Justified Layout
-  var layoutGeometry = require('justified-layout')(this.ratios, this.options.flickr);
+  var layoutGeometry = require('justified-layout')(this.selectedBoxes.map(function(box) { return box.aspectRatio }), this.options.flickr);
 
   // Give container appropriate height for the images it contains.
   if (layoutGeometry.boxes.length > 0) {
@@ -435,13 +435,14 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
   } 
 
   // For each boxNode
-  for (var i = 0; i < this.boxNodes.length; i++) {
+  for (var i = 0; i < this.boxObjects.length; i++) {
 
     // If this box is to be rendered in the current filteration
-    if (this.indexes.includes(i)) {
+    var boxObjectIndex = this.selectedBoxes.indexOf(this.boxObjects[i]);
+    if (boxObjectIndex >= 0) {
 
       // Grab the appropriate box information from Flickr Justified layout
-      var box = layoutGeometry.boxes[this.indexes.indexOf(i)];
+      var box = layoutGeometry.boxes[boxObjectIndex];
 
       // Apply Flickr data to the selected box unless box is undefined. Box can be undefined if it was not
       // filtered out, but is not rendered due to Flickr options (such as showWidows: false).
@@ -460,7 +461,7 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
       this.scale(this.boxNodes[i], 0);
     }
   } 
-  console.time('renderBoxes')
+  console.time('sortAndRenderBoxes')
 }
 
 // Destroy method for Tessarray.
