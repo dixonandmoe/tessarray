@@ -10,6 +10,7 @@ require=function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requi
 
 // ------ Tessaray Initialization ------
 var Tessarray = function(boxSelector, containerSelector, options) {
+  // console.time('sortAndRenderBoxes');
   this.container = document.querySelector(containerSelector);
   this.boxSelector = boxSelector;
   this.options = options || {};
@@ -341,7 +342,7 @@ Tessarray.prototype.initialRender = function() {
 
   // Else, render every box
   } else {
-    this.setSelectedBoxes(this.boxObjects);
+    this.selectedBoxes = this.boxObjects;
 
     // Pass true to indicate that this is the initial render
     this.renderBoxes(true);
@@ -352,7 +353,7 @@ Tessarray.prototype.initialRender = function() {
 Tessarray.prototype.sortByCategory = function(category, initialRender) {
   console.time('sortAndRenderBoxes')
   if (category === "") {
-    var sortedBoxes = this.boxObjects;
+    this.selectedBoxes = this.boxObjects;
   } else {
     var filteredBoxes = this.boxObjects.filter(function(box) {
       return box.classes[category] !== undefined;
@@ -461,7 +462,7 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
       this.scale(this.boxNodes[i], 0);
     }
   } 
-  console.time('sortAndRenderBoxes')
+  console.timeEnd('sortAndRenderBoxes')
 }
 
 // Destroy method for Tessarray.
