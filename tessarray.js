@@ -10,7 +10,6 @@ require=function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requi
 
 // ------ Tessaray Initialization ------
 var Tessarray = function(boxSelector, containerSelector, options) {
-  // console.time('sortAndRenderBoxes');
   this.container = document.querySelector(containerSelector);
   this.boxSelector = boxSelector;
   this.options = options || {};
@@ -19,6 +18,9 @@ var Tessarray = function(boxSelector, containerSelector, options) {
   // elements so they can be removed in the destroy method.
   this.eventListeners = {}
 
+  // Not sure why this has to be set to undefined first. There were issues with destroying and 
+  // recreating tessarray objects
+  this.eventListeners['container'] = undefined;
   this.eventListeners['container'] = function(event) {
     if (event.target === this.container) {
       this.addTransitionToAllBoxNodes();
@@ -54,6 +56,7 @@ var Tessarray = function(boxSelector, containerSelector, options) {
   this.setOptionValue("boxLoadedClass", 'is-loaded');
   this.setOptionValue("containerLoadedCallback", false);
   this.setOptionValue("boxLoadedCallback", false);
+  this.setOptionValue("renderCallback", false);
   this.setOptionValue("flickr", {});
 
 
@@ -261,7 +264,7 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, index) {
     this.aspectRatio = parseFloat(this.boxNode.getAttribute('data-aspect-ratio'));
     tessarray.confirmLoad(index);
   } else if (this.boxNode.getAttribute('data-height') && this.boxNode.getAttribute('data-width')) {
-    this.aspectRatio = parseFloat(this.boxNode.getAttribute('data-height')) / parseFloat(this.boxNode.getAttribute('data-width'));
+    this.aspectRatio = parseFloat(this.boxNode.getAttribute('data-width')) / parseFloat(this.boxNode.getAttribute('data-height'));
     tessarray.confirmLoad(index);
   } 
 
@@ -392,8 +395,24 @@ Tessarray.prototype.addTransitionToAllBoxNodes = function() {
   }
 }
 
+
+function debounce(func, wait, immediate) {
+  var timeout;
+  return function() {
+    var context = this, args = arguments;
+    var later = function() {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    };
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
+};
+
 // Render the boxes with the correct coordinates
-Tessarray.prototype.renderBoxes = function(initialRender) {
+Tessarray.prototype.renderBoxes = debounce(function(initialRender) {
   this.setContainerWidth();
 
   // Get coordinates from Flickr Justified Layout using an array of the aspect ratios of the selectedBoxes. 
@@ -440,7 +459,17 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
       this.scale(this.boxNodes[i], 0);
     }
   } 
-}
+
+  if (initialRender) {
+    if (typeof this.options.renderCallback === "function") {
+      this.options.renderCallback(this, true);
+    }
+  } else {
+    if (typeof this.options.renderCallback === "function") {
+      this.options.renderCallback(this, false);
+    }
+  }
+}, 100);
 
 // Destroy method for Tessarray.
 // Remove event listeners on selectors and window, remove transition from container and boxNodes.
@@ -461,8 +490,10 @@ Tessarray.prototype.destroy = function() {
     // this.classList.remove(this.boxLoadedClass);
   }
   
-  for (j = 0; j < this.selectors.length; j++) {
-    this.selectors[j].removeEventListener('click', this.eventListeners[j]);
+  if (this.selectors) {
+    for (j = 0; j < this.selectors.length; j++) {
+      this.selectors[j].removeEventListener('click', this.eventListeners[j]);
+    } 
   }
 
   this.boxObjects = null;
