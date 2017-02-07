@@ -320,7 +320,7 @@ Tessarray.prototype.deterimineIfBoxesLoaded = function() {
 // Rerender the boxes if the container width has not been specified and container width has changed since last render
 Tessarray.prototype.renderIfNecessary = function() {
   if ((!this.specifiedContainerWidth) && (this.options.flickr.containerWidth !== this.container.clientWidth)) {
-    this.renderBoxes();
+    debounce(this.renderBoxes.bind(this), 100)();
   }
 }
 
@@ -412,15 +412,15 @@ function debounce(func, wait, immediate) {
 };
 
 // Render the boxes with the correct coordinates
-Tessarray.prototype.renderBoxes = debounce(function(initialRender) {
+Tessarray.prototype.renderBoxes = function(initialRender) {
   this.setContainerWidth();
 
   // Get coordinates from Flickr Justified Layout using an array of the aspect ratios of the selectedBoxes. 
-  var layoutGeometry = require('justified-layout')(this.selectedBoxes.map(function(box) { return box.aspectRatio }), this.options.flickr);
+  this.layoutGeometry = require('justified-layout')(this.selectedBoxes.map(function(box) { return box.aspectRatio }), this.options.flickr);
 
   // Give container appropriate height for the images it contains.
-  if (layoutGeometry.boxes.length > 0) {
-    var height = layoutGeometry.boxes[layoutGeometry.boxes.length - 1].top + layoutGeometry.boxes[layoutGeometry.boxes.length - 1].height + this.containerPaddingBottom;
+  if (this.layoutGeometry.boxes.length > 0) {
+    var height = this.layoutGeometry.boxes[this.layoutGeometry.boxes.length - 1].top + this.layoutGeometry.boxes[this.layoutGeometry.boxes.length - 1].height + this.containerPaddingBottom;
     this.container.style.height = height.toString() + "px";
   } else {
     this.container.style.height = "0px";
@@ -440,7 +440,7 @@ Tessarray.prototype.renderBoxes = debounce(function(initialRender) {
     if (boxObjectIndex >= 0) {
 
       // Grab the appropriate box information from Flickr Justified layout
-      var box = layoutGeometry.boxes[boxObjectIndex];
+      var box = this.layoutGeometry.boxes[boxObjectIndex];
 
       // Apply Flickr data to the selected box unless box is undefined. Box can be undefined if it was not
       // filtered out, but is not rendered due to Flickr options (such as showWidows: false).
@@ -469,7 +469,7 @@ Tessarray.prototype.renderBoxes = debounce(function(initialRender) {
       this.options.renderCallback(this, false);
     }
   }
-}, 100);
+}
 
 // Destroy method for Tessarray.
 // Remove event listeners on selectors and window, remove transition from container and boxNodes.
