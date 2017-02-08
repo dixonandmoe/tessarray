@@ -9,7 +9,7 @@ require=function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requi
 
 
 // ------ Tessaray Initialization ------
-var Tessarray = function(boxSelector, containerSelector, options) {
+var Tessarray = function(containerSelector, boxSelector, options) {
   this.container = document.querySelector(containerSelector);
   this.boxSelector = boxSelector;
   this.options = options || {};
