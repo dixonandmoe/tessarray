@@ -11,14 +11,13 @@ require=function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requi
 // ------ Tessaray Initialization ------
 var Tessarray = function(containerSelector, boxSelector, options) {
   this.container = document.querySelector(containerSelector);
-  this.boxSelector = boxSelector;
   this.options = options || {};
 
   // The eventListeners object is used to record what functions have been added to which
   // elements so they can be removed in the destroy method.
   this.eventListeners = {}
 
-  // Not sure why this has to be set to undefined first. There were issues with destroying and 
+  // Container set to undefined first. Without it, there are issues with destroying and 
   // recreating tessarray objects
   this.eventListeners['container'] = undefined;
   this.eventListeners['container'] = function(event) {
@@ -34,7 +33,6 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   
   // Set default values for options
   this.setOptionValue("selectorClass", false);
-  this.setOptionValue("imageClass", false);
   this.setOptionValue("defaultCategory", false);
   this.setOptionValue("resize", true);
   this.setOptionValue("containerTransition", {
@@ -54,15 +52,15 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   });
   this.setOptionValue("containerLoadedClass", 'container-is-loaded');
   this.setOptionValue("boxLoadedClass", 'is-loaded');
-  this.setOptionValue("containerLoadedCallback", false);
-  this.setOptionValue("boxLoadedCallback", false);
-  this.setOptionValue("renderCallback", false);
+  this.setOptionValue("onContainerLoad", false);
+  this.setOptionValue("onBoxLoad", false);
+  this.setOptionValue("onRender", false);
   this.setOptionValue("flickr", {});
 
 
   // Instantiate variables to keep track of whether or not Tessarray needs to wait to load the image dimensions before rendering
-  this.dimensionsLoaded = [];
-  this.containerHasLoaded = false;
+  this.boxesAspectRatioStates = [];
+  this.containerIsReady = false;
 
   // For each of the transitions, check the type. 
   // If it is an object, use the keys of the object to set the transition
@@ -99,7 +97,7 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   this.boxObjects = [];
 
   // Scope boxes to containerSelector
-  var boxes = this.container.querySelectorAll(this.boxSelector);
+  var boxes = this.container.querySelectorAll(boxSelector);
 
   // For each box node create a newBoxObject
   var invalidBoxNodeCount = 0;
@@ -161,12 +159,12 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   // If this.options.resize, resize the container upon window size change if 
   // container size is modified
   if (this.options.resize) {
-    this.eventListeners["window"] = this.renderIfNecessary.bind(this);
+    this.eventListeners["window"] = this.renderOnResize.bind(this);
     window.addEventListener("resize", this.eventListeners["window"])
   }
 
   // Confirm that this.container has the correct data and is ready to render
-  this.containerLoad();
+  this.setContainerState();
 
   // If given selectorClass is given, bind sortByCategory to the click of each selector
   // Do not put in initialize function so multiple event listeners are not assigned
@@ -189,7 +187,7 @@ var TessarrayBox = function(box, index, tessarray) {
   this.boxNode = box;
 
   // Indicate to the tessarray object that the current image has not yet loaded
-  tessarray.dimensionsLoaded[index] = false; 
+  tessarray.boxesAspectRatioStates[index] = false; 
 
   // Give this.classes key values of every category is belongs to and values of the position
   // if the position was given. Converts to camel case to look for dataset value.
@@ -199,11 +197,8 @@ var TessarrayBox = function(box, index, tessarray) {
     this.classes[classes[i]] = box.dataset[camelCasedClass] || null;
   }
 
-  // Find the image to be rendered in the box. If imageClass is given, use that class to find the element.
-  // If the box itself is an image, use the box.
-  if (tessarray.options.imageClass) {
-    this.image = box.getElementsByClassName(tessarray.options.imageClass)[0];
-  } else if (box.querySelector('img')) {
+  // Find the image to be rendered in the box. If the box itself is an image, use the box.
+  if (box.querySelector('img')) {
     this.image = box.querySelector('img');
   } else if (box.tagName === "IMG") {
     this.image = box;
@@ -211,29 +206,27 @@ var TessarrayBox = function(box, index, tessarray) {
 
   // If data attribute for aspect ratio is set or data attribute for height and width are set, call setAspectRatio.
   if (box.getAttribute('data-aspect-ratio') || (box.getAttribute('data-height') && box.getAttribute('data-width'))) {
-    this.givenAspectRatio = true;
     this.setAspectRatio(tessarray, index);
 
   // If the image doesn't exist and it does not have height and width or aspect ratio, 
   // call confirm load so the initial render does not wait on this image and raise an error.
   } else if (!this.image || !this.image.getAttribute('src')) {
     this.invalid = true; 
-    tessarray.confirmLoad(index);
+    tessarray.boxIsReady(index);
     console.log("One of your images does not exist.");
 
-  // Else, get aspect ratio by loading the image source into Javascript, then confirmLoad once
+  // Else, get aspect ratio by loading the image source into Javascript, then boxIsReady once
   // the image has loaded.
   } else {
-    this.givenAspectRatio = false;
     var source = this.image.getAttribute('src');
     var img = new Image();
     var thisBoxObj = this;
     img.onload = function() {
       thisBoxObj.aspectRatio = this.width / this.height;
-      tessarray.confirmLoad(index);
+      tessarray.boxIsReady(index);
       box.classList.add(tessarray.options.boxLoadedClass);
-      if (typeof tessarray.options.boxLoadedCallback === "function") {
-        tessarray.options.boxLoadedCallback(thisBoxObj);
+      if (typeof tessarray.options.onBoxLoad === "function") {
+        tessarray.options.onBoxLoad(thisBoxObj);
       }
     }
     img.src = source;
@@ -257,16 +250,16 @@ Tessarray.prototype.setContainerWidth = function() {
   }
 }
 
-// Set aspect ratio for TessarrayBox and then confirmLoad.
+// Set aspect ratio for TessarrayBox and then boxIsReady.
 // If TessarrayBox has an image, this loads image in javascript before setting 
-// the boxLoadedClass and triggering the boxLoadedCallback
+// the boxLoadedClass and triggering the onBoxLoad
 TessarrayBox.prototype.setAspectRatio = function(tessarray, index) {
   if (this.boxNode.getAttribute('data-aspect-ratio')) {
     this.aspectRatio = parseFloat(this.boxNode.getAttribute('data-aspect-ratio'));
-    tessarray.confirmLoad(index);
+    tessarray.boxIsReady(index);
   } else if (this.boxNode.getAttribute('data-height') && this.boxNode.getAttribute('data-width')) {
     this.aspectRatio = parseFloat(this.boxNode.getAttribute('data-width')) / parseFloat(this.boxNode.getAttribute('data-height'));
-    tessarray.confirmLoad(index);
+    tessarray.boxIsReady(index);
   } 
 
   // If image exists, load it
@@ -276,8 +269,8 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, index) {
     var thisBoxObj = this;
     img.onload = function() {
       thisBoxObj.boxNode.classList.add(tessarray.options.boxLoadedClass);
-      if (typeof tessarray.options.boxLoadedCallback === "function") {
-        tessarray.options.boxLoadedCallback(thisBoxObj);
+      if (typeof tessarray.options.onBoxLoad === "function") {
+        tessarray.options.onBoxLoad(thisBoxObj);
       }
     }
     img.src = source;
@@ -285,33 +278,33 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, index) {
   // Else trigger boxLoaded immediately.
   } else {
     this.boxNode.classList.add(tessarray.options.boxLoadedClass);
-    if (typeof tessarray.options.boxLoadedCallback === "function") {
-      tessarray.options.boxLoadedCallback(this);
+    if (typeof tessarray.options.onBoxLoad === "function") {
+      tessarray.options.onBoxLoad(this);
     }
   }
 }
 
-// Set index of dimensionsLoaded to be true. If every element in dimensionsLoaded is either
+// Set index of boxesAspectRatioStates to be true. If every element in boxesAspectRatioStates is either
 // true or undefined, then the intial render is called. 
-Tessarray.prototype.confirmLoad = function(index) {
-  this.dimensionsLoaded[index] = true;
-  if (this.deterimineIfBoxesLoaded() && this.containerHasLoaded) {
+Tessarray.prototype.boxIsReady = function(index) {
+  this.boxesAspectRatioStates[index] = true;
+  if (this.boxesAreReady() && this.containerIsReady) {
     this.initialRender();
   }
 }
 
 // Confirm that container has loaded, and attempt initial render if boxes have loaded already
-Tessarray.prototype.containerLoad = function() {
-  this.containerHasLoaded = true;
-  if (this.deterimineIfBoxesLoaded()) {
+Tessarray.prototype.setContainerState = function() {
+  this.containerIsReady = true;
+  if (this.boxesAreReady()) {
     this.initialRender();
   }
 }
 
 // Determine if every element that needs to load has loaded its dimensions
-Tessarray.prototype.deterimineIfBoxesLoaded = function() {
-  for (var i = 0; i < this.dimensionsLoaded.length; i++) {
-    if (!this.dimensionsLoaded[i]) {
+Tessarray.prototype.boxesAreReady = function() {
+  for (var i = 0; i < this.boxesAspectRatioStates.length; i++) {
+    if (!this.boxesAspectRatioStates[i]) {
       return false;
     }
   }
@@ -319,22 +312,22 @@ Tessarray.prototype.deterimineIfBoxesLoaded = function() {
 }
 
 // Rerender the boxes if the container width has not been specified and container width has changed since last render
-Tessarray.prototype.renderIfNecessary = function() {
+Tessarray.prototype.renderOnResize = function() {
   if ((!this.specifiedContainerWidth) && (this.options.flickr.containerWidth !== this.container.clientWidth)) {
-    debounce(this.renderBoxes.bind(this), 100)();
+    this.debounce(this.render.bind(this), 100)();
   }
 }
 
 // Render the boxes for the first time
 Tessarray.prototype.initialRender = function() {
 
-  // Make the container opaque, add containerLoaded class, and trigger containerLoadedCallback.
+  // Make the container opaque, add containerLoaded class, and trigger onContainerLoad.
   setTimeout(function() {
     this.container.style.opacity = "1";
   }.bind(this), 0)
   this.container.classList.add(this.options.containerLoadedClass);
-  if (typeof this.options.containerLoadedCallback === "function") {
-    this.options.containerLoadedCallback(this);
+  if (typeof this.options.onContainerLoad === "function") {
+    this.options.onContainerLoad(this);
   }
 
   // If selectors are being used and there is a defaultCategory, render that category.
@@ -348,7 +341,7 @@ Tessarray.prototype.initialRender = function() {
     this.selectedBoxes = this.boxObjects;
 
     // Pass true to indicate that this is the initial render
-    this.renderBoxes(true);
+    this.render(true);
   }
 }
 
@@ -370,9 +363,9 @@ Tessarray.prototype.sortByCategory = function(category, initialRender) {
   // and it is truthy. Could add event.preventDefault() earlier, but it might overwrite
   // other functionality implemented by the user.
   if (initialRender === true) {
-    this.renderBoxes(true);
+    this.render(true);
   } else {
-    this.renderBoxes();
+    this.render();
   }
 }
 
@@ -396,8 +389,8 @@ Tessarray.prototype.addTransitionToAllBoxNodes = function() {
   }
 }
 
-
-function debounce(func, wait, immediate) {
+// Debounce used to prevent tessarray from calling render too frequently when resizing window.
+Tessarray.prototype.debounce = function(func, wait, immediate) {
   var timeout;
   return function() {
     var context = this, args = arguments;
@@ -413,7 +406,7 @@ function debounce(func, wait, immediate) {
 };
 
 // Render the boxes with the correct coordinates
-Tessarray.prototype.renderBoxes = function(initialRender) {
+Tessarray.prototype.render = function(initialRender) {
   this.setContainerWidth();
 
   // Get coordinates from Flickr Justified Layout using an array of the aspect ratios of the selectedBoxes. 
@@ -462,12 +455,12 @@ Tessarray.prototype.renderBoxes = function(initialRender) {
   } 
 
   if (initialRender) {
-    if (typeof this.options.renderCallback === "function") {
-      this.options.renderCallback(this, true);
+    if (typeof this.options.onRender === "function") {
+      this.options.onRender(this, true);
     }
   } else {
-    if (typeof this.options.renderCallback === "function") {
-      this.options.renderCallback(this, false);
+    if (typeof this.options.onRender === "function") {
+      this.options.onRender(this, false);
     }
   }
 }
@@ -481,14 +474,9 @@ Tessarray.prototype.destroy = function() {
   }
 
   this.container.style.transition = "";
-  // this.container.style.opacity = "";
-  // this.container.style.position = "";
-  // this.container.classList.remove(this.containerLoadedClass);
 
   for (i = 0; i < this.boxNodes.length; i++) {
     this.boxNodes[i].style.transition = "";
-    // this.boxNodes[i].style.position = "";
-    // this.classList.remove(this.boxLoadedClass);
   }
   
   if (this.selectors) {
@@ -497,6 +485,7 @@ Tessarray.prototype.destroy = function() {
     } 
   }
 
+  debugger
   this.boxObjects = null;
   delete this.boxObjects;
   this.eventListeners = null;
