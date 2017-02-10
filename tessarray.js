@@ -485,10 +485,7 @@ Tessarray.prototype.destroy = function() {
     } 
   }
 
-  debugger
-  this.boxObjects = null;
   delete this.boxObjects;
-  this.eventListeners = null;
   delete this.eventListeners;
   delete this;
 }
