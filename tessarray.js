@@ -28,7 +28,11 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   }.bind(this);
 
   if ((this.options.containerTransition !== false) && (typeof this.options.containerTransition !== "object" || this.options.containerTransition.duration !== 0)) {
-    this.container.addEventListener('transitionend', this.eventListeners['container']);
+    try {
+      this.container.addEventListener('transitionend', this.eventListeners['container']);
+    } catch (e) {
+      throw ('Cannot find container with selectorString "' + containerSelector + '"');
+    }
   }
   
   // Set default values for options
@@ -213,7 +217,7 @@ var TessarrayBox = function(box, index, tessarray) {
   } else if (!this.image || !this.image.getAttribute('src')) {
     this.invalid = true; 
     tessarray.boxIsReady(index);
-    console.log("One of your images does not exist.");
+    console.error("One of your images does not exist.")
 
   // Else, get aspect ratio by loading the image source into Javascript, then boxIsReady once
   // the image has loaded.
