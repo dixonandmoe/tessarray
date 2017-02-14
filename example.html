@@ -57,6 +57,10 @@
       opacity: 1;
     }
 
+    .box {
+      transition: transform 500ms ease-in 0ms, height 500ms ease-in 0ms, width 500ms ease-in 0ms;
+    }
+
 </style>
   <body style="background-color: black">
     <div style="margin : auto; text-align: center">
@@ -71,7 +75,7 @@
         
     <!-- Provide aspect ratio or height and width through data attributes, or don't specify any at all -->
     <!-- Provide the aspect ratios either way for better performance -->
-    <div class="containerb">
+    <div class="container">
       <!-- data-height="1080" data-width="1600" --> 
       <div class="box reverse people" data-reverse="10" data-height="1080" data-width="1600">
         <svg class="image" style="width: 100%; height: 100%;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 256 250" version="1.1" preserveAspectRatio="xMidYMid">
@@ -304,6 +308,8 @@
   // setTimeout(function() {
     var tessarray = new Tessarray(".container", ".box", {
       selectorClass: "selector",
+      boxTransition: false,
+      boxTransformOutTransition: false
 
       // Comment-in lines to see how options effect the render
       // imageClass: "imageClass",

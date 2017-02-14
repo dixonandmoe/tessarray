@@ -15,21 +15,21 @@ var Tessarray = function(containerSelector, boxSelector, options) {
 
   // The eventListeners object is used to record what functions have been added to which
   // elements so they can be removed in the destroy method.
-  this.eventListeners = {}
+  this.eventListeners = {};
 
   // Container set to undefined first. Without it, there are issues with destroying and 
   // recreating tessarray objects
-  this.eventListeners['container'] = undefined;
-  this.eventListeners['container'] = function(event) {
+  this.eventListeners.container = undefined;
+  this.eventListeners.container = function(event) {
     if (event.target === this.container) {
       this.addTransitionToAllBoxNodes();
-      this.container.removeEventListener('transitionend', this.eventListeners['container']);
+      this.container.removeEventListener('transitionend', this.eventListeners.container);
     }
   }.bind(this);
 
   if ((this.options.containerTransition !== false) && (typeof this.options.containerTransition !== "object" || this.options.containerTransition.duration !== 0)) {
     try {
-      this.container.addEventListener('transitionend', this.eventListeners['container']);
+      this.container.addEventListener('transitionend', this.eventListeners.container);
     } catch (e) {
       throw ('Cannot find container with selectorString "' + containerSelector + '"');
     }
@@ -135,7 +135,7 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   if (this.options.containerTransition) {
     setTimeout(function() {
       this.container.style.transition = this.containerTransition;
-    }.bind(this), 0)
+    }.bind(this), 0);
   }
 
   // If user specified containerPadding, use it to calculate height
@@ -163,8 +163,8 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   // If this.options.resize, resize the container upon window size change if 
   // container size is modified
   if (this.options.resize) {
-    this.eventListeners["window"] = this.renderOnResize.bind(this);
-    window.addEventListener("resize", this.eventListeners["window"])
+    this.eventListeners.window = this.renderOnResize.bind(this);
+    window.addEventListener("resize", this.eventListeners.window);
   }
 
   // Confirm that this.container has the correct data and is ready to render
@@ -174,13 +174,13 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   // Do not put in initialize function so multiple event listeners are not assigned
   if (this.options.selectorClass) {
     this.selectors = document.getElementsByClassName(this.options.selectorClass);
-    for (var i = 0; i < this.selectors.length; i++) {
-      var category = this.selectors[i].getAttribute('data-category');
-      this.eventListeners[i] = this.sortByCategory.bind(this, category);
-      this.selectors[i].addEventListener("click", this.eventListeners[i]);
+    for (var j = 0; j < this.selectors.length; j++) {
+      var category = this.selectors[j].getAttribute('data-category');
+      this.eventListeners[j] = this.sortByCategory.bind(this, category);
+      this.selectors[j].addEventListener("click", this.eventListeners[j]);
     }
   }
-}
+};
 
 
 // ------ TessarrayBox Initialization ------
@@ -217,7 +217,7 @@ var TessarrayBox = function(box, index, tessarray) {
   } else if (!this.image || !this.image.getAttribute('src')) {
     this.invalid = true; 
     tessarray.boxIsReady(index);
-    console.error("One of your images does not exist.")
+    console.error("One of your images does not exist.");
 
   // Else, get aspect ratio by loading the image source into Javascript, then boxIsReady once
   // the image has loaded.
@@ -232,10 +232,10 @@ var TessarrayBox = function(box, index, tessarray) {
       if (typeof tessarray.options.onBoxLoad === "function") {
         tessarray.options.onBoxLoad(thisBoxObj);
       }
-    }
+    };
     img.src = source;
   }
-}
+};
 
  
 // ------ Tessarray Functions ------
@@ -244,7 +244,7 @@ Tessarray.prototype.setOptionValue = function(key, defaultValue) {
   if (this.options[key] === undefined) {
     this.options[key] = defaultValue;
   }
-}
+};
 
 // Update container width to be the width of the container element if container width was
 // not specified
@@ -252,7 +252,7 @@ Tessarray.prototype.setContainerWidth = function() {
   if (!this.specifiedContainerWidth) {
     this.options.flickr.containerWidth = this.container.clientWidth;
   }
-}
+};
 
 // Set aspect ratio for TessarrayBox and then boxIsReady.
 // If TessarrayBox has an image, this loads image in javascript before setting 
@@ -276,7 +276,7 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, index) {
       if (typeof tessarray.options.onBoxLoad === "function") {
         tessarray.options.onBoxLoad(thisBoxObj);
       }
-    }
+    };
     img.src = source;
 
   // Else trigger boxLoaded immediately.
@@ -286,7 +286,7 @@ TessarrayBox.prototype.setAspectRatio = function(tessarray, index) {
       tessarray.options.onBoxLoad(this);
     }
   }
-}
+};
 
 // Set index of boxesAspectRatioStates to be true. If every element in boxesAspectRatioStates is either
 // true or undefined, then the intial render is called. 
@@ -295,7 +295,7 @@ Tessarray.prototype.boxIsReady = function(index) {
   if (this.boxesAreReady() && this.containerIsReady) {
     this.initialRender();
   }
-}
+};
 
 // Confirm that container has loaded, and attempt initial render if boxes have loaded already
 Tessarray.prototype.setContainerState = function() {
@@ -303,7 +303,7 @@ Tessarray.prototype.setContainerState = function() {
   if (this.boxesAreReady()) {
     this.initialRender();
   }
-}
+};
 
 // Determine if every element that needs to load has loaded its dimensions
 Tessarray.prototype.boxesAreReady = function() {
@@ -313,7 +313,7 @@ Tessarray.prototype.boxesAreReady = function() {
     }
   }
   return true;
-}
+};
 
 // Debounce used to prevent tessarray from calling render too frequently when resizing window.
 Tessarray.prototype.debounce = function(func, wait, immediate) {
@@ -336,7 +336,7 @@ Tessarray.prototype.renderOnResize = function() {
   if ((!this.specifiedContainerWidth) && (this.options.flickr.containerWidth !== this.container.clientWidth)) {
     this.debounce(this.render.bind(this), 100)();
   }
-}
+};
 
 // Render the boxes for the first time
 Tessarray.prototype.initialRender = function() {
@@ -344,7 +344,7 @@ Tessarray.prototype.initialRender = function() {
   // Make the container opaque, add containerLoaded class, and trigger onContainerLoad.
   setTimeout(function() {
     this.container.style.opacity = "1";
-  }.bind(this), 0)
+  }.bind(this), 0);
   this.container.classList.add(this.options.containerLoadedClass);
   if (typeof this.options.onContainerLoad === "function") {
     this.options.onContainerLoad(this);
@@ -363,7 +363,7 @@ Tessarray.prototype.initialRender = function() {
     // Pass true to indicate that this is the initial render
     this.render(true);
   }
-}
+};
 
 // Filter boxes by class, and then sort them by data-attribute values for that class
 Tessarray.prototype.sortByCategory = function(category, initialRender) {
@@ -387,34 +387,36 @@ Tessarray.prototype.sortByCategory = function(category, initialRender) {
   } else {
     this.render();
   }
-}
+};
 
 // Helper method to change the scale of boxNodes without overwriting their translated position
 Tessarray.prototype.scale = function(boxNode, scale) {
-  var transformStyle = boxNode.style.transform;
+  if (this.boxTransformOutTransition) {
+    boxNode.style.transition = this.boxTransformOutTransition;
+  }
 
+  var transformStyle = boxNode.style.transform;
   // If boxNode has a transform style already, change the scale but not the translation
-  boxNode.style.transition = this.boxTransformOutTransition;
   if (transformStyle !== "") {
     boxNode.style.transform = transformStyle.replace(/(scale\()(\d)(\))/, ("$1" + scale.toString() + "$3"));
   } else {
     boxNode.style.transform = "translate(0px, 0px) scale(" + scale.toString() + ")";
   }
-}
+};
 
 // Add transition to boxes. This is called every render except for the initial render
 Tessarray.prototype.addTransitionToAllBoxNodes = function() {
   for (var i = 0; i < this.boxNodes.length; i++) {
     this.boxNodes[i].style.transition = this.boxTransition;
   }
-}
+};
 
 // Render the boxes with the correct coordinates
 Tessarray.prototype.render = function(initialRender) {
   this.setContainerWidth();
 
   // Get coordinates from Flickr Justified Layout using an array of the aspect ratios of the selectedBoxes. 
-  this.layoutGeometry = require('justified-layout')(this.selectedBoxes.map(function(box) { return box.aspectRatio }), this.options.flickr);
+  this.layoutGeometry = require('justified-layout')(this.selectedBoxes.map(function(box) { return box.aspectRatio; }), this.options.flickr);
 
   // Give container appropriate height for the images it contains.
   if (this.layoutGeometry.boxes.length > 0) {
@@ -426,7 +428,7 @@ Tessarray.prototype.render = function(initialRender) {
 
   // If not the initial render, ensure that there are transitions for height, width and translate
   // for each box
-  if (!initialRender) {
+  if (!initialRender && this.options.containerTransition) {
     this.addTransitionToAllBoxNodes();
   } 
 
@@ -467,29 +469,28 @@ Tessarray.prototype.render = function(initialRender) {
       this.options.onRender(this, false);
     }
   }
-}
+};
 
 // Destroy method for Tessarray.
 // Remove event listeners on selectors and window, remove transition from container and boxNodes.
 // Remove pointers to boxObjects. Leaving position and such so the display does not change.
 Tessarray.prototype.destroy = function() {
-  if (this.eventListeners["window"]) {
-    window.removeEventListener('resize', this.eventListeners["window"]);
+  if (this.eventListeners.window) {
+    window.removeEventListener('resize', this.eventListeners.window);
   }
 
   this.container.style.transition = "";
 
-  for (i = 0; i < this.boxNodes.length; i++) {
+  for (var i = 0; i < this.boxNodes.length; i++) {
     this.boxNodes[i].style.transition = "";
   }
   
   if (this.selectors) {
-    for (j = 0; j < this.selectors.length; j++) {
+    for (var j = 0; j < this.selectors.length; j++) {
       this.selectors[j].removeEventListener('click', this.eventListeners[j]);
     } 
   }
 
   delete this.boxObjects;
   delete this.eventListeners;
-  delete this;
-}
+};
