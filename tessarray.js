@@ -99,32 +99,6 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   // Check if user specified containerWidth
   this.specifiedContainerWidth = !!this.options.flickr.containerWidth;
 
-  // Array of html nodes of each box
-  this.boxNodes = [];
-
-  // Array of javascript objects representing each box
-  this.boxObjects = [];
-
-  // Scope boxes to containerSelector
-  var boxes = this.container.querySelectorAll(boxSelector);
-
-  // For each box node create a newBoxObject
-  var invalidBoxNodeCount = 0;
-  for (var i = 0; i < boxes.length; i++) {
-    var newBoxObject = new TessarrayBox(boxes[i], i, this);
-
-    // Add this newBoxObject to this.boxObjects and the node to this.boxNodes if there is a valid image
-    if (!newBoxObject.invalid) {
-      this.boxObjects[i - invalidBoxNodeCount] = newBoxObject;
-      this.boxNodes[i - invalidBoxNodeCount] = boxes[i];
-      this.boxNodes[i - invalidBoxNodeCount].style.position = "absolute";
-
-    // Else incremement counter to ensure there are not gaps in this.boxObjects or this.boxNodes arrays
-    } else {
-      invalidBoxNodeCount += 1;
-    }
-  }
-
   // Set width that is passed to the Justified Layout to be the current width of the container
   this.setContainerWidth();
 
@@ -170,6 +144,32 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   if (this.options.resize) {
     this.eventListeners.window = this.renderOnResize.bind(this);
     window.addEventListener("resize", this.eventListeners.window);
+  }
+
+  // Array of html nodes of each box
+  this.boxNodes = [];
+
+  // Array of javascript objects representing each box
+  this.boxObjects = [];
+
+  // Scope boxes to containerSelector
+  var boxes = this.container.querySelectorAll(boxSelector);
+
+  // For each box node create a newBoxObject
+  var invalidBoxNodeCount = 0;
+  for (var i = 0; i < boxes.length; i++) {
+    var newBoxObject = new TessarrayBox(boxes[i], i, this);
+
+    // Add this newBoxObject to this.boxObjects and the node to this.boxNodes if there is a valid image
+    if (!newBoxObject.invalid) {
+      this.boxObjects[i - invalidBoxNodeCount] = newBoxObject;
+      this.boxNodes[i - invalidBoxNodeCount] = boxes[i];
+      this.boxNodes[i - invalidBoxNodeCount].style.position = "absolute";
+
+    // Else incremement counter to ensure there are not gaps in this.boxObjects or this.boxNodes arrays
+    } else {
+      invalidBoxNodeCount += 1;
+    }
   }
 
   // Confirm that this.container has the correct data and is ready to render
@@ -349,11 +349,13 @@ Tessarray.prototype.initialRender = function() {
   // Make the container opaque, add containerLoaded class, and trigger onContainerLoad.
   setTimeout(function() {
     this.container.style.opacity = "1";
+    // Just moved this into setTimeout and it fixed things...
+    this.container.classList.add(this.options.containerLoadedClass);
+    if (typeof this.options.onContainerLoad === "function") {
+      this.options.onContainerLoad(this);
+    }
   }.bind(this), 0);
-  this.container.classList.add(this.options.containerLoadedClass);
-  if (typeof this.options.onContainerLoad === "function") {
-    this.options.onContainerLoad(this);
-  }
+  console.log("Added containerLoadedClass");
 
   // If selectors are being used and there is a defaultCategory, render that category.
   if (this.options.selectorClass && this.options.defaultCategory) {
@@ -421,7 +423,6 @@ Tessarray.prototype.addTransitionToAllBoxNodes = function() {
 // Render the boxes with the correct coordinates
 Tessarray.prototype.render = function(initialRender) {
   this.setContainerWidth();
-
   // Get coordinates from Flickr Justified Layout using an array of the aspect ratios of the selectedBoxes. 
   this.layoutGeometry = require('justified-layout')(this.selectedBoxes.map(function(box) { return box.aspectRatio; }), this.options.flickr);
 
@@ -486,7 +487,9 @@ Tessarray.prototype.destroy = function() {
     window.removeEventListener('resize', this.eventListeners.window);
   }
 
-  this.container.style.transition = "";
+  if (this.options.containerTransition) {
+    this.container.style.transition = "";
+  }
 
   for (var i = 0; i < this.boxNodes.length; i++) {
     this.boxNodes[i].style.transition = "";
