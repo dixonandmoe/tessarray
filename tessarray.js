@@ -13,7 +13,8 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   
   // Set default values for options
   this.setOptionValue("selectorClass", false);
-  this.setOptionValue("defaultCategory", false);
+  this.setOptionValue("defaultFilter", false);
+  this.setOptionValue("defaultSort", false);
   this.setOptionValue("resize", true);
   this.setOptionValue("containerTransition", {
     duration: 300,
@@ -139,35 +140,76 @@ var Tessarray = function(containerSelector, boxSelector, options) {
     window.addEventListener("resize", this.eventListeners.window);
   }
 
-  // If given selectorClass is given, bind sortByCategory to the click of each selector
+  // If given selectorClass is given, bind filter and sort functions to the click of the selector depending
+  // on what is given. 
+  this.allFilters = [];
+  this.allSorts = {};
   if (this.options.selectorClass) {
     this.selectors = document.getElementsByClassName(this.options.selectorClass);
     for (var j = 0; j < this.selectors.length; j++) {
-      var category = this.selectors[j].getAttribute('data-category');
-      this.eventListeners[j] = this.sortByCategory.bind(this, category);
-      this.selectors[j].addEventListener("click", this.eventListeners[j]);
+      var filterString = this.selectors[j].getAttribute("data-filter");
+      var sortString = this.selectors[j].getAttribute("data-sort");
+
+      // Add event listeners for filtering and sorting if filterString and sortString exist
+      if ((filterString !== null) && (sortString !== null)) {
+        this.eventListeners[j] = this.filterAndSort.bind(this, filterString, sortString);
+      } else if (filterString !== null) {
+        this.eventListeners[j] = this.filter.bind(this, filterString);
+      } else if (sortString !== null) {
+        this.eventListeners[j] = this.sort.bind(this, sortString);
+      }
+
+      // Add filterString and sortString to respective collections if they are not an empty string
+      if (filterString) {
+        this.allFilters.push(filterString);
+      }
+      if (sortString) {
+        this.allSorts[sortString] = true;
+      }
+
+      // If there was a valid filterString or valid sortString, bind eventListeners[j] to click
+      if (this.eventListeners[j]) {
+        this.selectors[j].addEventListener("click", this.eventListeners[j]);
+      }
     }
   }
 
   // Create boxNodes and boxObjects for Tessarray instance
   this.createBoxes(boxSelector);
 
+  // Set values to floats if possible
+  if (this.options.selectorClass) {
+    for (var sortKey in this.allSorts) {
+      if (this.allSorts[sortKey]) {
+        this.sortValuesToNumbers(sortKey);
+      }
+    }
+  }
   // Confirm that this.container has the correct data and is ready to render
   this.setContainerState();
 };
 
+Tessarray.prototype.sortValuesToNumbers = function(sortKey) {
+  if (sortKey !== "") {
+    this.boxObjects.forEach(function(boxObject) {
+      if (boxObject.sortData[sortKey] !== false) {
+        boxObject.sortData[sortKey] = +boxObject.sortData[sortKey].replace(/,/g, "");
+      }
+    });
+  }
+}
+
 
 // ------ TessarrayBox Initialization ------
 Tessarray.prototype.createBoxes = function(boxSelector) {
+  // Scope boxes to containerSelector
+  var boxes = this.container.querySelectorAll(boxSelector);
   // Array of html nodes of each box
   this.boxNodes = [];
   // Array of javascript objects representing each box
   this.boxObjects = [];
   // Instantiate variables to keep track of whether or not Tessarray needs to wait to load the image dimensions before rendering
   this.boxesAspectRatioStates = [];
-
-  // Scope boxes to containerSelector
-  var boxes = this.container.querySelectorAll(boxSelector);
 
   // For each box node create a newBoxObject
   var invalidBoxNodeCount = 0;
@@ -185,23 +227,58 @@ Tessarray.prototype.createBoxes = function(boxSelector) {
       invalidBoxNodeCount += 1;
     }
   }
+
   this.boxesHaveBeenCreated = true;
 }
 
 var TessarrayBox = function(box, index, tessarray) {
   this.index = index;
-  this.classes = {};
   this.boxNode = box;
+  this.filters = [];
+  this.sortData = {};
 
   // Indicate to the tessarray object that the current image has not yet loaded
   tessarray.boxesAspectRatioStates[index] = false; 
 
-  // Give this.classes key values of every category is belongs to and values of the position
-  // if the position was given. Converts to camel case to look for dataset value.
-  var classes = box.getAttribute('class').split(" ");
-  for (var i = 0; i < classes.length; i++) {
-    var camelCasedClass = classes[i].replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
-    this.classes[classes[i]] = box.dataset[camelCasedClass] || null;
+  if (tessarray.options.selectorClass) {
+    tessarray.allFilters.forEach(function(filter) {
+      if (box.classList.contains(filter)) {
+        this.filters.push(filter);
+      }
+    }.bind(this));
+
+    for (var key in tessarray.allSorts) {
+      if (key !== "") {
+        var sortValue;
+        if (key.slice(0, 5) === "data-") {
+          var camelCasedKey = key.slice(5).replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
+          sortValue = box.dataset[camelCasedKey];
+        } else {
+          if (box.getElementsByClassName(key)[0]) {
+            sortValue = box.getElementsByClassName(key)[0].innerHTML.toLowerCase().trim();
+          } else {
+            sortValue = false;
+          }
+        }
+
+        // console.log(sortValue);
+        if (!sortValue) {
+          sortValue = false;
+
+        // Check if it is still possibly a numeric field
+        } else if (tessarray.allSorts[key]) {
+          // Check if this sortValue is possibly a numeric field
+          // If sortValue cannot be turned into a number
+          if (+sortValue.replace(/,/g, "") !== +sortValue.replace(/,/g, "")) {
+            // set the value to false
+            tessarray.allSorts[key] = false;
+          }
+        }
+        
+
+        this.sortData[key] = sortValue;
+      }
+    }
   }
 
   // Find the image to be rendered in the box. If the box itself is an image, use the box.
@@ -355,44 +432,77 @@ Tessarray.prototype.initialRender = function() {
     this.options.onContainerLoad(this);
   }
 
-  // If selectors are being used and there is a defaultCategory, render that category.
-  if (this.options.selectorClass && this.options.defaultCategory) {
-
-    // Pass in true to indicate that this is handling the initial render.
-    this.sortByCategory(this.options.defaultCategory, true);
+  // If selectors are being used and there is a defaultFilter or defaultSort, sort and filter on those values
+  // before initial render.
+  if (this.options.selectorClass && this.options.defaultFilter && this.options.defaultSort) {
+    // Pass true to indicate that this is the initial render
+    this.filterAndSort(this.options.defaultFilter, this.options.defaultSort, true);
 
   // Else, render every box
   } else {
-    this.selectedBoxes = this.boxObjects;
+    this.selectedBoxes = this.boxObjects.slice();
 
     // Pass true to indicate that this is the initial render
     this.render(true);
   }
 };
 
-// Filter boxes by class, and then sort them by data-attribute values for that class
-Tessarray.prototype.sortByCategory = function(category, initialRender) {
-  if (category === "") {
-    this.selectedBoxes = this.boxObjects;
-  } else {
-    var filteredBoxes = this.boxObjects.filter(function(box) {
-      return box.classes[category] !== undefined;
-    });
+Tessarray.prototype.filterAndSort = function(filterString, sortString, initialRender) {
+  if ((!initialRender) && ((filterString === this.activeFilter) || (filterString === false)) && ((sortString === this.activeSort) || (sortString === false))) {
+    return;
+  }
 
-    this.selectedBoxes = filteredBoxes.sort(function(boxA, boxB) {
-      return parseInt(boxA.classes[category]) - parseInt(boxB.classes[category]);
+  if ((filterString === this.activeFilter) || (filterString === false)) {
+    // Do nothing
+  } else if (filterString === "") {
+    this.activeFilter = filterString;
+    this.selectedBoxes = this.boxObjects.slice();
+  } else {
+    this.activeFilter = filterString;
+    this.selectedBoxes = this.boxObjects.filter(function(box) {
+      return box.filters.indexOf(filterString) >= 0;
     });
   }
 
-  // Can't pass in initialRender because event is inadvertently passed as a parameter
-  // and it is truthy. Could add event.preventDefault() earlier, but it might overwrite
-  // other functionality implemented by the user.
+  if ((sortString === this.activeSort) || (sortString === false)) {
+    // Do nothing
+  } else if (sortString === "") {
+    this.activeSort = sortString;
+    this.selectedBoxes = this.selectedBoxes.sort(function(boxA, boxB) {
+      return boxA.index - boxB.index;
+    });
+  } else {
+    this.activeSort = sortString;
+    // Place boxes without values (thus given value of false) at the end
+    this.selectedBoxes = this.selectedBoxes.sort(function(boxA, boxB) {
+      if (boxA.sortData[sortString] === false) {
+        return 1;
+      } else if (boxB.sortData[sortString] === false) {
+        return -1;
+      } else if (boxA.sortData[sortString] < boxB.sortData[sortString]) {
+        return -1;
+      } else if (boxA.sortData[sortString] > boxB.sortData[sortString]) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+  }
+
   if (initialRender === true) {
     this.render(true);
   } else {
     this.render();
   }
-};
+}
+
+Tessarray.prototype.filter = function(filterString) {
+  this.filterAndSort(filterString, false);
+}
+
+Tessarray.prototype.sort = function(sortString) {
+  this.filterAndSort(false, sortString);
+}
 
 // Helper method to change the scale of boxNodes without overwriting their translated position
 Tessarray.prototype.scale = function(boxNode, scale) {
