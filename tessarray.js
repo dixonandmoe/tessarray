@@ -30,47 +30,16 @@ var Tessarray = function(containerSelector, boxSelector, options) {
 
   this._setEventListeners();
 
-  this._addEventListenersToSelectors
-  // If given selectorClass is given, bind filter and sort functions to the click of the selector depending
-  // on what is given. 
-  if (this.options.selectorClass) {
-    this.selectors = document.getElementsByClassName(this.options.selectorClass);
-    for (var j = 0; j < this.selectors.length; j++) {
-      var filterString = this.selectors[j].getAttribute("data-filter");
-      var sortString = this.selectors[j].getAttribute("data-sort");
-
-      // Add event listeners for filtering and sorting if filterString and sortString exist
-      if ((filterString !== null) && (sortString !== null)) {
-        this.eventListeners[j] = this.filterAndSort.bind(this, filterString, sortString);
-      } else if (filterString !== null) {
-        this.eventListeners[j] = this.filter.bind(this, filterString);
-      } else if (sortString !== null) {
-        this.eventListeners[j] = this.sort.bind(this, sortString);
-      }
-
-      // Add filterString and sortString to respective collections if they are not an empty string
-      if (filterString) {
-        this.allFilters.push(filterString);
-      }
-      if (sortString) {
-        this.allSorts[sortString] = true;
-      }
-
-      // If there was a valid filterString or valid sortString, bind eventListeners[j] to click
-      if (this.eventListeners[j]) {
-        this.selectors[j].addEventListener("click", this.eventListeners[j]);
-      }
-    }
-  }
+  this._bindAndPrepareFilteringAndSorting();
 
   // Create boxNodes and boxObjects for Tessarray instance
   this._createBoxes(boxSelector);
 
-  // Set values to floats if possible
-  this._changeSortValuesToNumbers();
+  // Set values to numbers if possible
+  this._changeSortValuesToNumbersIfPossible();
 
   // Confirm that this.container has the correct data and is ready to render
-  this.setContainerState();
+  this._setContainerState();
 };
 
 Tessarray.prototype._setOptions = function() {
@@ -185,23 +154,23 @@ Tessarray.prototype._setContainerPadding = function() {
   }
 }
 
-
 Tessarray.prototype._setEventListeners = function() {
-  // The eventListeners object is used to record what functions have been added to which
-  // elements so they can be removed in the destroy method.
 
+  // The eventListeners object is used to store functions have been added to which
+  // elements so they can be removed in the destroy method.
   this.eventListeners.container = function(event) {
     if (event.target === this.container) {
-      this.addTransitionToAllBoxNodes();
+      this._addTransitionToAllBoxNodes();
       this.container.removeEventListener('transitionend', this.eventListeners.container); 
     }
   }.bind(this);
 
+  // If transition is set and its duration is greater than 0
   if ((this.options.containerTransition !== false) && (typeof this.options.containerTransition !== "object" || this.options.containerTransition.duration !== 0)) {
     try {
       this.container.addEventListener('transitionend', this.eventListeners.container);
     } catch (e) {
-      throw ('Cannot find container with selectorString "' + containerSelector + '"');
+      console.error('Cannot find container with selectorString "' + containerSelector + '"');
     }
   }
 
@@ -213,19 +182,60 @@ Tessarray.prototype._setEventListeners = function() {
   }
 }
 
-// What to name this?
-Tessarray.prototype._changeSortValuesToNumbers = function() {
+Tessarray.prototype._bindAndPrepareFilteringAndSorting = function() {
+  if (this.options.selectorClass) {
+    this.selectors = document.getElementsByClassName(this.options.selectorClass);
+    this.selectors.forEach(function(selector) {
+      var filterString = selector.getAttribute("data-filter");
+      var sortString = selector.getAttribute("data-sort");
+
+      this._setAndBindSelectorEventListeners(filterString, sortString);
+
+      this._addFilterToCollection(filterString);
+      this._addSortToCollection(sortString);
+    });
+  }
+}
+
+Tessarray.prototype._setAndBindSelectorEventListeners = function(filterString, sortString) {
+  // Add event listeners for filtering and sorting if filterString and sortString exist
+  if ((filterString !== null) && (sortString !== null)) {
+    this.eventListeners[j] = this.filterAndSort.bind(this, filterString, sortString);
+  } else if (filterString !== null) {
+    this.eventListeners[j] = this.filter.bind(this, filterString);
+  } else if (sortString !== null) {
+    this.eventListeners[j] = this.sort.bind(this, sortString);
+  }
+
+  // If there was a valid filterString or valid sortString, bind eventListeners[j] to click
+  if (this.eventListeners[j]) {
+    this.selectors[j].addEventListener("click", this.eventListeners[j]);
+  }
+}
+
+Tessarray.prototype._addFilterToCollection = function(filterString) {
+  if (filterString) {
+    this.allFilters.push(filterString);
+  }
+}
+
+Tessarray.prototype._addSortToCollection = function(sortString) {
+  if (sortString) {
+    this.allSorts[sortString] = true;
+  }
+}
+
+Tessarray.prototype._changeSortValuesToNumbersIfPossible = function() {
   if (this.options.selectorClass) {
     for (var sortKey in this.allSorts) {
       if (this.allSorts[sortKey]) {
-        this.sortValuesToNumbers(sortKey);
+        this._changeSortValuesToNumbers(sortKey);
       }
     }
   }
 }
 
-// What to name this?
-Tessarray.prototype.sortValuesToNumbers = function(sortKey) {
+Tessarray.prototype._changeSortValuesToNumbers = function(sortKey) {
   if (sortKey !== "") {
     this.boxObjects.forEach(function(boxObject) {
       if (boxObject.sortData[sortKey] !== false) {
@@ -234,6 +244,27 @@ Tessarray.prototype.sortValuesToNumbers = function(sortKey) {
     });
   }
 }
+
+Tessarray.prototype._setContainerState = function() {
+  this.containerIsReady = true;
+  if (this.boxesAreReady()) {
+    this.initialRender();
+  }
+};
+
+// Determine if every element that needs to load has loaded its dimensions
+Tessarray.prototype.boxesAreReady = function() {
+  if (!this.boxesHaveBeenCreated) {
+    return false; 
+  } else {
+    for (var i = 0; i < this.boxesAspectRatioStates.length; i++) {
+      if (!this.boxesAspectRatioStates[i]) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
 
 
 // ------ TessarrayBox Initialization ------
@@ -261,53 +292,73 @@ Tessarray.prototype._createBoxes = function(boxSelector) {
 var TessarrayBox = function(box, index, tessarray) {
   this.index = index;
   this.boxNode = box;
+  this.tessarray = tessarray;
   this.filters = [];
   this.sortData = {};
 
   // Indicate to the tessarray object that the current image has not yet loaded
-  tessarray.boxesAspectRatioStates[index] = false; 
+  this.tessarray.boxesAspectRatioStates[index] = false; 
 
-  if (tessarray.options.selectorClass) {
-    tessarray.allFilters.forEach(function(filter) {
-      if (box.classList.contains(filter)) {
-        this.filters.push(filter);
-      }
-    }.bind(this));
-
-    for (var key in tessarray.allSorts) {
-      if (key !== "") {
-        var sortValue;
-        if (key.slice(0, 5) === "data-") {
-          var camelCasedKey = key.slice(5).replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
-          sortValue = box.dataset[camelCasedKey];
-        } else {
-          if (box.getElementsByClassName(key)[0]) {
-            sortValue = box.getElementsByClassName(key)[0].innerHTML.toLowerCase().trim();
-          } else {
-            sortValue = false;
-          }
-        }
-
-        // console.log(sortValue);
-        if (!sortValue) {
-          sortValue = false;
-
-        // Check if it is still possibly a numeric field
-        } else if (tessarray.allSorts[key]) {
-          // Check if this sortValue is possibly a numeric field
-          // If sortValue cannot be turned into a number
-          if (+sortValue.replace(/,/g, "") !== +sortValue.replace(/,/g, "")) {
-            // set the value to false
-            tessarray.allSorts[key] = false;
-          }
-        }
-        
-
-        this.sortData[key] = sortValue;
-      }
-    }
+  if (this.tessarray.options.selectorClass) {
+    this._setFilters();
+    this._setSortData();
   }
 
+  this._loadImagesAndSetAspectRatios();
+};
+
+TessarrayBox.prototype._setFilters = function() {
+  this.tessarray.allFilters.forEach(function(filter) {
+    if (box.classList.contains(filter)) {
+      this.filters.push(filter);
+    }
+  }.bind(this));
+}
+
+TessarrayBox.prototype._setSortData = function() {
+  for (var key in tessarray.allSorts) {
+    var sortValue = this._setSortValue()
+
+    // If sortValue is falsey, explicitly set to false
+    if (!sortValue) {
+      sortValue = false;
+
+    // Check if it is still possibly a numeric field
+    } else if (tessarray.allSorts[key]) {
+      // If sortValue cannot be turned into a number, set value to false
+      if (!this._isValidNumber(sortValue)) {
+        tessarray.allSorts[key] = false;
+      }
+    }
+    
+    this.sortData[key] = sortValue;
+  }
+}
+
+TessarrayBox.prototype._setSortValue = function(string) {
+  // If key is prepended with "data-", search the box's data attributes for the value
+  if (key.slice(0, 5) === "data-") {
+    sortValue = box.dataset[this.camelCase(key.slice(5))];
+  } else {
+
+    // Else search for an element with the correct class and get its innerHTML 
+    if (box.getElementsByClassName(key)[0]) {
+      sortValue = box.getElementsByClassName(key)[0].innerHTML.toLowerCase().trim();
+    } else {
+      sortValue = false;
+    }
+  }
+}
+
+TessarrayBox.prototype._camelCase = function(string) {
+  return string.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
+}
+
+TessarrayBox.prototype._isValidNumber = function(string) {
+  return !(+string.replace(/,/g, "") !== +string.replace(/,/g, ""));
+}
+
+TessarrayBox.prototype._loadImagesAndSetAspectRatios = function(string) {
   // Find the image to be rendered in the box. If the box itself is an image, use the box.
   if (box.querySelector('img')) {
     this.image = box.querySelector('img');
@@ -317,13 +368,13 @@ var TessarrayBox = function(box, index, tessarray) {
 
   // If data attribute for aspect ratio is set or data attribute for height and width are set, call setAspectRatio.
   if (box.getAttribute('data-aspect-ratio') || (box.getAttribute('data-height') && box.getAttribute('data-width'))) {
-    this.setAspectRatio(tessarray, index);
+    this.setAspectRatio(this.tessarray, index);
 
   // If the image doesn't exist and it does not have height and width or aspect ratio, 
   // call confirm load so the initial render does not wait on this image and raise an error.
   } else if (!this.image || !this.image.getAttribute('src')) {
     this.invalid = true; 
-    tessarray.boxIsReady(index);
+    this.tessarray.boxIsReady(index);
     console.error("One of your images does not exist.");
 
   // Else, get aspect ratio by loading the image source into Javascript, then boxIsReady once
@@ -342,23 +393,18 @@ var TessarrayBox = function(box, index, tessarray) {
     };
     img.src = source;
   }
-};
-
+}
  
-// ------ Tessarray Functions ------
-// Sets default values for options, does so by checking if undefined rather than falsey
-
 // Set aspect ratio for TessarrayBox and then boxIsReady.
 // If TessarrayBox has an image, this loads image in javascript before setting 
 // the boxLoadedClass and triggering the onBoxLoad
 TessarrayBox.prototype.setAspectRatio = function(tessarray, index) {
   if (this.boxNode.getAttribute('data-aspect-ratio')) {
     this.aspectRatio = parseFloat(this.boxNode.getAttribute('data-aspect-ratio'));
-    tessarray.boxIsReady(index);
   } else if (this.boxNode.getAttribute('data-height') && this.boxNode.getAttribute('data-width')) {
     this.aspectRatio = parseFloat(this.boxNode.getAttribute('data-width')) / parseFloat(this.boxNode.getAttribute('data-height'));
-    tessarray.boxIsReady(index);
   } 
+  tessarray.boxIsReady(index);
 
   // If image exists, load it
   if (this.image) {
@@ -391,26 +437,13 @@ Tessarray.prototype.boxIsReady = function(index) {
   }
 };
 
-// Confirm that container has loaded, and attempt initial render if boxes have loaded already
-Tessarray.prototype.setContainerState = function() {
-  this.containerIsReady = true;
-  if (this.boxesAreReady()) {
-    this.initialRender();
-  }
-};
+// ------ Render Functions ------
 
-// Determine if every element that needs to load has loaded its dimensions
-Tessarray.prototype.boxesAreReady = function() {
-  if (!this.boxesHaveBeenCreated) {
-    return false; 
-  } else {
-    for (var i = 0; i < this.boxesAspectRatioStates.length; i++) {
-      if (!this.boxesAspectRatioStates[i]) {
-        return false;
-      }
-    }
+// Rerender the boxes if the container width has not been specified and container width has changed since last render
+Tessarray.prototype.renderOnResize = function() {
+  if ((!this.specifiedContainerWidth) && (this.options.flickr.containerWidth !== this.container.clientWidth)) {
+    this.debounce(this.render.bind(this), 100)();
   }
-  return true;
 };
 
 // Debounce used to prevent tessarray from calling render too frequently when resizing window.
@@ -427,13 +460,6 @@ Tessarray.prototype.debounce = function(func, wait, immediate) {
     timeout = setTimeout(later, wait);
     if (callNow) func.apply(context, args);
   };
-};
-
-// Rerender the boxes if the container width has not been specified and container width has changed since last render
-Tessarray.prototype.renderOnResize = function() {
-  if ((!this.specifiedContainerWidth) && (this.options.flickr.containerWidth !== this.container.clientWidth)) {
-    this.debounce(this.render.bind(this), 100)();
-  }
 };
 
 // Render the boxes for the first time
@@ -462,10 +488,12 @@ Tessarray.prototype.initialRender = function() {
 };
 
 Tessarray.prototype.filterAndSort = function(filterString, sortString, initialRender) {
+  // If not the first render and there have been no changes to filtering or sorting, break out of filterAndSort
   if ((!initialRender) && ((filterString === this.activeFilter) || (filterString === false)) && ((sortString === this.activeSort) || (sortString === false))) {
     return;
   }
 
+  // Filter
   if ((filterString === this.activeFilter) || (filterString === false)) {
     // Do nothing
   } else if (filterString === "") {
@@ -478,6 +506,7 @@ Tessarray.prototype.filterAndSort = function(filterString, sortString, initialRe
     });
   }
 
+  // Sort
   if ((sortString === this.activeSort) || (sortString === false)) {
     // Do nothing
   } else if (sortString === "") {
@@ -503,6 +532,7 @@ Tessarray.prototype.filterAndSort = function(filterString, sortString, initialRe
     });
   }
 
+  // Change this with initialRender changes
   if (initialRender === true) {
     this.render(true);
   } else {
@@ -519,7 +549,7 @@ Tessarray.prototype.sort = function(sortString) {
 }
 
 // Helper method to change the scale of boxNodes without overwriting their translated position
-Tessarray.prototype.scale = function(boxNode, scale) {
+Tessarray.prototype._scale = function(boxNode, scale) {
   if (this.boxTransformOutTransition) {
     boxNode.style.transition = this.boxTransformOutTransition;
   }
@@ -534,7 +564,7 @@ Tessarray.prototype.scale = function(boxNode, scale) {
 };
 
 // Add transition to boxes. This is called every render except for the initial render
-Tessarray.prototype.addTransitionToAllBoxNodes = function() {
+Tessarray.prototype._addTransitionToAllBoxNodes = function() {
   if (this.boxTransition) {
     for (var i = 0; i < this.boxNodes.length; i++) {
       this.boxNodes[i].style.transition = this.boxTransition;
@@ -559,7 +589,7 @@ Tessarray.prototype.render = function(initialRender) {
   // If not the initial render, ensure that there are transitions for height, width and translate
   // for each box
   if (!initialRender) {
-    this.addTransitionToAllBoxNodes();
+    this._addTransitionToAllBoxNodes();
   } 
 
   // For each boxNode
@@ -581,12 +611,12 @@ Tessarray.prototype.render = function(initialRender) {
 
       // If it is undefined, scale it down to 0
       } else {
-        this.scale(this.boxNodes[i], 0);
+        this._scale(this.boxNodes[i], 0);
       }
 
     // Else remove the boxNode from sight
     } else {
-      this.scale(this.boxNodes[i], 0);
+      this._scale(this.boxNodes[i], 0);
     }
   }
 
@@ -599,7 +629,8 @@ Tessarray.prototype.render = function(initialRender) {
       this.options.onRender(this, false);
     }
   }
-  this.container.innerWidth
+  // Is this necessary for a reflow?
+  this.container.offsetTop;
 };
 
 // Destroy method for Tessarray.
@@ -617,14 +648,14 @@ Tessarray.prototype.destroy = function() {
     this.container.style.transition = "";
   }
 
-  for (var i = 0; i < this.boxNodes.length; i++) {
-    this.boxNodes[i].style.transition = "";
-  }
+  this.boxNodes.forEach(function(boxNode) {
+    boxNode.style.transition = "";
+  });
   
   if (this.selectors) {
-    for (var j = 0; j < this.selectors.length; j++) {
-      this.selectors[j].removeEventListener('click', this.eventListeners[j]);
-    } 
+    this.selectors.forEach(function(selector) {
+      selector.removeEventListener('click', this.eventListeners[j]);
+    });
   }
 
   delete this.boxObjects;
