@@ -15,7 +15,7 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   this.allFilters = [];
   this.allSorts = {};
 
-  this._setOptions();
+  this._setOptions(options);
 
   this._styleContainer();
 
@@ -42,7 +42,7 @@ var Tessarray = function(containerSelector, boxSelector, options) {
   this._setContainerState();
 };
 
-Tessarray.prototype._setOptions = function() {
+Tessarray.prototype._setOptions = function(options) {
   this.options = options || {};
   
   // Set default values for options
@@ -185,43 +185,32 @@ Tessarray.prototype._setEventListeners = function() {
 Tessarray.prototype._bindAndPrepareFilteringAndSorting = function() {
   if (this.options.selectorClass) {
     this.selectors = document.getElementsByClassName(this.options.selectorClass);
-    this.selectors.forEach(function(selector) {
-      var filterString = selector.getAttribute("data-filter");
-      var sortString = selector.getAttribute("data-sort");
+    for (var i = 0; i < this.selectors.length; i++) {
+      var filterString = this.selectors[i].getAttribute("data-filter");
+      var sortString = this.selectors[i].getAttribute("data-sort");
 
-      this._setAndBindSelectorEventListeners(filterString, sortString);
+      // Add event listeners for filtering and sorting if filterString and sortString exist
+      if ((filterString !== null) && (sortString !== null)) {
+        this.eventListeners[i] = this.filterAndSort.bind(this, filterString, sortString);
+      } else if (filterString !== null) {
+        this.eventListeners[i] = this.filter.bind(this, filterString);
+      } else if (sortString !== null) {
+        this.eventListeners[i] = this.sort.bind(this, sortString);
+      }
 
-      this._addFilterToCollection(filterString);
-      this._addSortToCollection(sortString);
-    });
-  }
-}
+      // If there was a valid filterString or valid sortString, bind eventListeners[i] to click
+      if (this.eventListeners[i]) {
+        this.selectors[i].addEventListener("click", this.eventListeners[i]);
+      }
 
-Tessarray.prototype._setAndBindSelectorEventListeners = function(filterString, sortString) {
-  // Add event listeners for filtering and sorting if filterString and sortString exist
-  if ((filterString !== null) && (sortString !== null)) {
-    this.eventListeners[j] = this.filterAndSort.bind(this, filterString, sortString);
-  } else if (filterString !== null) {
-    this.eventListeners[j] = this.filter.bind(this, filterString);
-  } else if (sortString !== null) {
-    this.eventListeners[j] = this.sort.bind(this, sortString);
-  }
-
-  // If there was a valid filterString or valid sortString, bind eventListeners[j] to click
-  if (this.eventListeners[j]) {
-    this.selectors[j].addEventListener("click", this.eventListeners[j]);
-  }
-}
-
-Tessarray.prototype._addFilterToCollection = function(filterString) {
-  if (filterString) {
-    this.allFilters.push(filterString);
-  }
-}
-
-Tessarray.prototype._addSortToCollection = function(sortString) {
-  if (sortString) {
-    this.allSorts[sortString] = true;
+      // Add filter and sort to Tessarray's collections
+      if (filterString) {
+        this.allFilters.push(filterString);
+      }
+      if (sortString) {
+        this.allSorts[sortString] = true;
+      }
+    }
   }
 }
 
@@ -269,6 +258,15 @@ Tessarray.prototype.boxesAreReady = function() {
 
 // ------ TessarrayBox Initialization ------
 Tessarray.prototype._createBoxes = function(boxSelector) {
+  // Scope boxes to containerSelector
+  var boxes = this.container.querySelectorAll(boxSelector);
+  // Array of html nodes of each box
+  this.boxNodes = [];
+  // Array of javascript objects representing each box
+  this.boxObjects = [];
+  // Instantiate variables to keep track of whether or not Tessarray needs to wait to load the image dimensions before rendering
+  this.boxesAspectRatioStates = [];
+
   // For each box node create a newBoxObject
   var invalidBoxNodeCount = 0;
   for (var i = 0; i < boxes.length; i++) {
@@ -309,25 +307,25 @@ var TessarrayBox = function(box, index, tessarray) {
 
 TessarrayBox.prototype._setFilters = function() {
   this.tessarray.allFilters.forEach(function(filter) {
-    if (box.classList.contains(filter)) {
+    if (this.boxNode.classList.contains(filter)) {
       this.filters.push(filter);
     }
   }.bind(this));
 }
 
 TessarrayBox.prototype._setSortData = function() {
-  for (var key in tessarray.allSorts) {
-    var sortValue = this._setSortValue()
+  for (var key in this.tessarray.allSorts) {
+    var sortValue = this._setSortValue(key)
 
     // If sortValue is falsey, explicitly set to false
     if (!sortValue) {
       sortValue = false;
 
     // Check if it is still possibly a numeric field
-    } else if (tessarray.allSorts[key]) {
+    } else if (this.tessarray.allSorts[key]) {
       // If sortValue cannot be turned into a number, set value to false
       if (!this._isValidNumber(sortValue)) {
-        tessarray.allSorts[key] = false;
+        this.tessarray.allSorts[key] = false;
       }
     }
     
@@ -335,19 +333,20 @@ TessarrayBox.prototype._setSortData = function() {
   }
 }
 
-TessarrayBox.prototype._setSortValue = function(string) {
+TessarrayBox.prototype._setSortValue = function(key) {
   // If key is prepended with "data-", search the box's data attributes for the value
   if (key.slice(0, 5) === "data-") {
-    sortValue = box.dataset[this.camelCase(key.slice(5))];
+    sortValue = this.boxNode.dataset[this._camelCase(key.slice(5))];
   } else {
 
     // Else search for an element with the correct class and get its innerHTML 
-    if (box.getElementsByClassName(key)[0]) {
-      sortValue = box.getElementsByClassName(key)[0].innerHTML.toLowerCase().trim();
+    if (this.boxNode.getElementsByClassName(key)[0]) {
+      sortValue = this.boxNode.getElementsByClassName(key)[0].innerHTML.toLowerCase().trim();
     } else {
       sortValue = false;
     }
   }
+  return sortValue;
 }
 
 TessarrayBox.prototype._camelCase = function(string) {
@@ -358,17 +357,17 @@ TessarrayBox.prototype._isValidNumber = function(string) {
   return !(+string.replace(/,/g, "") !== +string.replace(/,/g, ""));
 }
 
-TessarrayBox.prototype._loadImagesAndSetAspectRatios = function(string) {
-  // Find the image to be rendered in the box. If the box itself is an image, use the box.
-  if (box.querySelector('img')) {
-    this.image = box.querySelector('img');
-  } else if (box.tagName === "IMG") {
-    this.image = box;
+TessarrayBox.prototype._loadImagesAndSetAspectRatios = function() {
+  // Find the image to be rendered in the boxNode. Use the node itsel if the boxNode is an image
+  if (this.boxNode.querySelector('img')) {
+    this.image = this.boxNode.querySelector('img');
+  } else if (this.boxNode.tagName === "IMG") {
+    this.image = this.boxNode;
   }
 
   // If data attribute for aspect ratio is set or data attribute for height and width are set, call setAspectRatio.
-  if (box.getAttribute('data-aspect-ratio') || (box.getAttribute('data-height') && box.getAttribute('data-width'))) {
-    this.setAspectRatio(this.tessarray, index);
+  if (this.boxNode.getAttribute('data-aspect-ratio') || (this.boxNode.getAttribute('data-height') && this.boxNode.getAttribute('data-width'))) {
+    this.setAspectRatio(this.tessarray, this.index);
 
   // If the image doesn't exist and it does not have height and width or aspect ratio, 
   // call confirm load so the initial render does not wait on this image and raise an error.
@@ -385,10 +384,10 @@ TessarrayBox.prototype._loadImagesAndSetAspectRatios = function(string) {
     var thisBoxObj = this;
     img.onload = function() {
       thisBoxObj.aspectRatio = this.width / this.height;
-      tessarray.boxIsReady(index);
-      box.classList.add(tessarray.options.boxLoadedClass);
-      if (typeof tessarray.options.onBoxLoad === "function") {
-        tessarray.options.onBoxLoad(thisBoxObj);
+      thisBoxObj.tessarray.boxIsReady(index);
+      this.boxNode.classList.add(thisBoxObj.tessarray.options.boxLoadedClass);
+      if (typeof thisBoxObj.tessarray.options.onBoxLoad === "function") {
+        thisBoxObj.tessarray.options.onBoxLoad(thisBoxObj);
       }
     };
     img.src = source;
