@@ -384,8 +384,8 @@ TessarrayBox.prototype._loadImagesAndSetAspectRatios = function() {
     var thisBoxObj = this;
     img.onload = function() {
       thisBoxObj.aspectRatio = this.width / this.height;
-      thisBoxObj.tessarray.boxIsReady(index);
-      this.boxNode.classList.add(thisBoxObj.tessarray.options.boxLoadedClass);
+      thisBoxObj.tessarray.boxIsReady(thisBoxObj.index);
+      thisBoxObj.boxNode.classList.add(thisBoxObj.tessarray.options.boxLoadedClass);
       if (typeof thisBoxObj.tessarray.options.onBoxLoad === "function") {
         thisBoxObj.tessarray.options.onBoxLoad(thisBoxObj);
       }
