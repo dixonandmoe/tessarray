@@ -1,131 +1,125 @@
 <html>
-	<div style="margin : auto; text-align: center">
-	  <h1>Tessarray<h1>
-	</div>
-	<button class="selector" data-category="">all</button>
-	<button class="selector" data-category="reverse">reverse-all</button>
-	<button class="selector" data-category="nature">nature</button>
-	<button class="selector" data-category="buildings">buildings</button>
-	<button class="selector" data-category="people">people</button>
-	<span style="float: right">Try resizing the window!</span>
-	    
-	<!-- Provide aspect ratio or height and width through data attributes, or don't specify any at all -->
-	<!-- Provide the aspect ratios either way for better performance -->
-	<div class="container">
-<!-- 	  <div class="box reverse">
-	    <img class="image" src="./images/151109151843-waf-interlace-sharp-1-exlarge-169.jpg"/>
-	  </div>
-	  <div class="box reverse">
-	    <img class="image" src="./images/1605-Architecture-Creativity-wHY-Louisville-Speed-Art-Museum-01.jpg"/>
-	  </div>
-	  <div class="box reverse">
-	    <img class="image" src="./images/empty-opponent.png"/>
-	  </div>
-	  <div class="box reverse">
-	    <img class="image" src="./images/great-building-watercolor.jpg"/>
-	  </div>
-	  <div class="box reverse">
-	    <img class="image" src="./images/monograph-architecture-website-template-mezzanine-profile-01-a.jpg"/>
-	  </div> -->
-		<!-- data-height="1080" data-width="1600" --> 
-	  <div class="box reverse people" data-reverse="10" data-aspect-ratio="0.675">
-	    <img class="image" src="https://source.unsplash.com/category/people/1080x1600"/>
-	  </div>
-	  <!-- data-height="720" data-width="1080" data-aspect-ratio="0.66666666666" --> 
-	  <div class="box reverse nature" data-reverse="9" data-height="720" data-width="1080">		    
-	    <img class="image" src="https://source.unsplash.com/category/nature/720x1080"/>
-	  </div>
-	  <!-- data-height="900" data-width="900" data-aspect-ratio="1" --> 
-	  <div class="box reverse nature" data-reverse="8" data-aspect-ratio="1">		    
-	    <img class="image" src="https://source.unsplash.com/category/nature/900x900"/>
-	  </div>
-	  <!-- data-height="1600" data-width="900" data-aspect-ratio="1.77777777778"--> 
-	  <div class="box reverse people" data-reverse="7" data-aspect-ratio="1.77777777778">
-	    <img class="image" src="https://source.unsplash.com/category/people/1600x900"/>
-	  </div>
-	  <!-- data-height="800" data-width="600" data-aspect-ratio="1.77778"--> 
-	  <div class="box reverse nature" data-reverse="6" data-aspect-ratio="1.77778">
-	    <img class="image" src="https://source.unsplash.com/category/nature/800x600"/>
-	  </div>
-	  <!-- data-height="600" data-width="600" data-aspect-ratio="1"--> 
-	  <div class="box reverse buildings" data-reverse="5" data-aspect-ratio="1">
-	    <img class="image" src="https://source.unsplash.com/category/buildings/600x600"/>
-	  </div>
-	  <!-- data-height="900" data-width="900" data-aspect-ratio="1"--> 
-	  <div class="box reverse people" data-reverse="4" data-aspect-ratio="1">
-	    <img class="image" src="https://source.unsplash.com/category/people/900x900"/>
-	  </div>
-	  <!-- data-height="800" data-width="600" data-aspect-ratio="1.77778"--> 
-	  <div class="box reverse buildings" data-reverse="3" data-aspect-ratio="1.77778">
-	    <img class="image" src="https://source.unsplash.com/category/buildings/800x600"/>
-	  </div>
-	  <!-- data-height="1080" data-width="1600" data-aspect-ratio="0.675"--> 
-	  <div class="box reverse buildings" data-reverse="2" data-aspect-ratio="0.675">
-	    <img class="image" src="https://source.unsplash.com/category/buildings/1080x1600"/>
-	  </div>
-	  <!-- data-height="1200" data-width="900" data-aspect-ratio="1.77778"--> 
-	  <div class="box reverse nature" data-reverse="1" data-aspect-ratio="1.77778">
-	    <img class="image" src="https://source.unsplash.com/category/nature/1200x900"/>
-	  </div>
-	</div>
+<style>
+    /* Use this if images are appearing before rendering correctly */
+    .container {
+      opacity: 0;
+    }
 
-	<style>
-		/* This is necessary for images to render properly */
-		.image {
-		  height: 100%;
-		  width: 100%;
-		}
+    .box {
+      background-color: gray;
+      transition: transform 500ms ease-in 0ms, height 500ms ease-in 0ms, width 500ms ease-in 0ms;
+    }
 
-		.image:hover {
-			opacity: 0.5;
-		}
+    /* 100% height and width are necessary for images to render correctly*/
+    .image {
+      height: 100%;
+      width: 100%;
+      opacity: 0;
+      transition: opacity 375ms ease-in;
+    }
 
-		/* Necessary if containerClass is not specified */
-		.container {
-		  position: relative;
-		}
+    .is-loaded .image {
+      opacity: 1;
+    }
+</style>
 
-		/* Use this if images are appearing before rendering correctly */
-		.container {
-		  opacity: 0;
-		}
+<body>
+  <div style="margin : auto; text-align: center">
+    <h1>Tessarray<h1>
+  </div>
+  <button class="selector" data-category="">all</button>
+  <button class="selector" data-category="reverse">reverse-all</button>
+  <button class="selector" data-category="nature">nature</button>
+  <button class="selector" data-category="buildings">buildings</button>
+  <button class="selector" data-category="people">people</button>
+  <span style="float: right">Try resizing the window!</span>
+      
+  <!-- Provide aspect ratio or height and width through data attributes for a smoother load. -->
+  <!-- If you don't know the dimensions, you don't have to provide any -->
+  <div class="container">
+    <div class="box reverse people" data-reverse="10" data-height="1600" data-width="1080">
+      <img class="image" src="https://source.unsplash.com/category/people/1080x1600"/>
+    </div>
+    <div class="box reverse nature" data-reverse="9" data-aspect-ratio="0.66666666666" >
+      <img class="image" src="https://source.unsplash.com/category/nature/720x1080"/>
+    </div>
+    <div class="box reverse nature" data-reverse="8" data-aspect-ratio="1">
+      <img class="image" src="https://source.unsplash.com/category/nature/900x900"/>
+    </div>
+    <div class="box reverse people" data-reverse="7" data-aspect-ratio="1.77777777778">
+      <img class="image" src="https://source.unsplash.com/category/people/1600x900"/>
+    </div>
+    <div class="box reverse nature" data-reverse="6" data-aspect-ratio="1.333333">
+      <img class="image" src="https://source.unsplash.com/category/nature/800x600"/>
+    </div>
+    <div class="box reverse buildings" data-reverse="5" data-aspect-ratio="1">
+      <img class="image" src="https://source.unsplash.com/category/buildings/600x600"/>
+    </div>
+    <div class="box reverse people" data-reverse="4" data-aspect-ratio="1">
+      <img class="image" src="https://source.unsplash.com/category/people/900x900"/>
+    </div>
+    <div class="box reverse buildings" data-reverse="3" data-aspect-ratio="1.333333333">
+      <img class="image" src="https://source.unsplash.com/category/buildings/800x600"/>
+    </div>
+    <div class="box reverse buildings" data-reverse="2" data-aspect-ratio="0.675">
+      <img class="image" src="https://source.unsplash.com/category/buildings/1080x1600"/>
+    </div>
+    <div class="box reverse nature" data-reverse="1" data-aspect-ratio="1.333333333">
+      <img class="image" src="https://source.unsplash.com/category/nature/1200x900"/>
+    </div>
+  </div>
+</body>
 
-		/* Use this to specify default container height before images load */
-/*		.container {
-			height: 500px;
-		}*/
+<script src='dist/tessarray.js'></script>  
+<script>
+  var tessarray = new Tessarray(".container", ".box", {
+    selectorClass: "selector",
+    boxTransition: false,
+    boxTransformOutTransition: false,
 
-		/* Use this to create a background for images before they render
-		Use if container opacity is not transitioning in */
-		.box {
-			background-color: grey;
-		}
-	</style>
+    // You can uncomment lines to see how options effect the render:
 
-	<script src='tessarray.js'></script>	
-	<script>
-		setTimeout(function() {
-			var tessarray = new Tessarray("box", {
-				// comment-out to see functionality without containerClass and selectorClass
-				containerClass: "container",
-				selectorClass: "selector",
+    // imageClass: "imageClass",
+    // defaultCategory: "people",
+    // containerTransition: "opacity 400ms ease-in",
+    // containerTransition: false,
+    // containerTransition: {
+    //   duration: 5000,
+    //   timingFunction: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+    //   delay: 0
+    // },
+    // boxTransition: {
+      // duration: 350,
+      // timingFunction: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+      // timingFunction: "cubic-bezier(0.320, 1.385, 0.730, -0.470)",
+      // delay: 0,  
+    // },
+    // boxTransition: 'transform 500ms ease-in 0ms, height 500ms ease-in 0ms, width 500ms ease-in 0ms',
+    // boxTransition: 'height 500ms ease-in 0ms, width 500ms ease-in 0ms',
+    // isLoaded: function(box) {
+    //   // box.style.opacity = 1;
+    // },
+    // flickr: {
+      // containerWidth: 900,
+      // targetRowHeight: 300,
+      // targetRowHeightTolerance: 0.25,
+      // showWidows: false,
+      // containerPadding: 0,
+      // containerPadding: {
+      //   top: 10,
+      //   right: 15,
+      //   bottom: 0,
+      //   left: 5
+      // }
+      // maxNumRows: 2,
+      // containerPadding: 40
+    // }
+  });
 
-				// Comment-in lines to see how options effect the render
-				// duration: 650,
-				// timingFunction: "cubic-bezier(0.215, 0.61, 0.355, 1)",
-				// imageClass: "imageClass",
-				// delay: 50,
-				// defaultCategory: "people",
-				// containerTransition: false,
-				flickr: {
-					// targetRowHeight: 300,
-					// targetRowHeightTolerance: 0.15,
-					// maxNumRows: 2,
-					containerPadding: 40
-				}
-			});
-		}, 5000);
-		// tessarray.options.flickr.targetRowHeight = 500;
-		// tessarray.renderBoxes();
-	</script>
+
+  // You can change the options after Tessarray is instantiated, just 
+  // call tessarray.renderBoxes to apply new changes.
+  // tessarray.options.flickr.targetRowHeight = 500;
+  // tessarray.renderBoxes();
+</script>
 </html>

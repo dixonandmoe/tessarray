@@ -1,0 +1,25 @@
+{
+  "name": "tessarray",
+  "version": "1.0.0",
+  "description": "Easy application of Flickr's Justified Layout with optional sorting and filtering.",
+  "main": "tessarray.pkgd.min.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "git+https://github.com/dixonandmoe/tessarray.git",
+  "keywords": [
+    "layout",
+    "sort",
+    "size",
+    "responsive"
+  ],
+  "author": "Mark Janzer <mark@dixonandmoe.com> (https://dixonandmoe.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dixonandmoe/tessarray/issues"
+  },
+  "homepage": "https://github.com/dixonandmoe/tessarray#readme",
+  "dependencies": {
+    "justified-layout": "2.1.1"
+  }
+}
