@@ -2,25 +2,6 @@
 
 Responsive application of Flickr's Justified Layout with optional sorting and filtering.
 
-## Install
-### Download
-+ JavaScript:
-  - [flickity.pkgd.min.js](https://unpkg.com/flickity@2.0/dist/flickity.pkgd.min.js) minified, or
-  - [flickity.pkgd.js](https://unpkg.com/flickity@2.0/dist/flickity.pkgd.js) un-minified
-
-### CDN
-Link directly to Flickity files on [unpkg](https://unpkg.com).
-
-``` html
-<script src="https://unpkg.com/flickity@2.0/dist/flickity.pkgd.min.js"></script>
-<!-- or -->
-<script src="https://unpkg.com/flickity@2.0/dist/flickity.pkgd.js"></script>
-```
-
-### Package managers
-Bower: `bower install flickity --save`
-npm: `npm install flickity --save`
-
 ## Getting Started
 
 Tessarray works with a container and a set of boxes. If the boxes contain images, Tessarray
