@@ -2,7 +2,7 @@
   "name": "tessarray",
   "version": "1.0.1",
   "description": "Easy application of Flickr's Justified Layout with optional sorting and filtering.",
-  "main": "tessarray.pkgd.min.js",
+  "main": "tessarray.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

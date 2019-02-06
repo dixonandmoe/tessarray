@@ -2,8 +2,6 @@
 // Copyright 2016 Dixon and Moe
 // Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
 
-
-
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
@@ -638,7 +636,7 @@
         this.options.onRender(this, false);
       }
     }
-    // Is this necessary for a reflow?
+    // This might be necessary for a reflow
     this.container.offsetTop;
   };
 
