@@ -545,15 +545,15 @@
     } else {
       this.render();
     }
-  }
+  };
 
   Tessarray.prototype.filter = function(filterString) {
     this.filterAndSort(filterString, false);
-  }
+  };
 
   Tessarray.prototype.sort = function(sortString) {
     this.filterAndSort(false, sortString);
-  }
+  };
 
   // Helper method to change the scale of boxNodes without overwriting their translated position
   Tessarray.prototype._scale = function(boxNode, scale) {
@@ -669,4 +669,4 @@
   };
 
   return Tessarray;
-}
+}));
