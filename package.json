@@ -1,6 +1,6 @@
 {
   "name": "tessarray",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Easy application of Flickr's Justified Layout with optional sorting and filtering.",
   "main": "tessarray.js",
   "scripts": {
